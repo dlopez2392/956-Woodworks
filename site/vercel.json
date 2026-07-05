@@ -1,0 +1,13 @@
+{
+  "redirects": [
+    { "source": "/Gallery.dc.html", "destination": "/gallery.html" },
+    { "source": "/Cutting Board Care.dc.html", "destination": "/cutting-board-care.html" },
+    { "source": "/Cutting%20Board%20Care.dc.html", "destination": "/cutting-board-care.html" },
+    { "source": "/Furniture Care.dc.html", "destination": "/furniture-care.html" },
+    { "source": "/Furniture%20Care.dc.html", "destination": "/furniture-care.html" },
+    { "source": "/Rolling Pin Care.dc.html", "destination": "/rolling-pin-care.html" },
+    { "source": "/Rolling%20Pin%20Care.dc.html", "destination": "/rolling-pin-care.html" },
+    { "source": "/956 Woodworks.dc.html", "destination": "/index.html" },
+    { "source": "/956%20Woodworks.dc.html", "destination": "/index.html" }
+  ]
+}
