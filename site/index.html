@@ -44,7 +44,24 @@
     ]
   }
   </script>
-  <script>/* Re-apply SEO head tags: the DC runtime wipes <head> on hydration. Crawlers read the static HTML above; this restores title/favicon/meta for real visitors. */(function(){var S='title,meta[name=description],meta[name=theme-color],meta[property^="og:"],meta[name^="twitter:"],link[rel~=icon],link[rel="apple-touch-icon"],link[rel=canonical],script[type="application/ld+json"]',T=document.title,K=[].map.call(document.head.querySelectorAll(S),function(n){return n.cloneNode(true)});function R(){if(T&&document.title!==T){document.title=T}for(var i=0;i<K.length;i++){var n=K[i];if(n.tagName=='TITLE')continue;var a=n.hasAttribute('property')?'property':n.hasAttribute('name')?'name':n.hasAttribute('rel')?'rel':'',sel=a?n.tagName+'['+a+'="'+n.getAttribute(a)+'"]':(n.type?'script[type="application/ld+json"]':n.tagName);if(!document.head.querySelector(sel)){document.head.appendChild(n.cloneNode(true))}}}var c=0,t=setInterval(function(){R();if(++c>24){clearInterval(t)}},250);document.addEventListener('DOMContentLoaded',R);window.addEventListener('load',R)})();</script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      { "@type": "Question", "name": "How long does a custom piece take?", "acceptedAnswer": { "@type": "Answer", "text": "Most commissions run about 3-6 weeks from approved design and deposit. Larger furniture and restorations can take longer; I'll give you a realistic timeline before we start." } },
+      { "@type": "Question", "name": "How does the commission process work?", "acceptedAnswer": { "@type": "Answer", "text": "Reach out with what you have in mind, and we'll talk through size, wood, style, and budget. I confirm a quote and timeline, a deposit reserves your spot, then I build it (sharing progress along the way) with the balance due on completion." } },
+      { "@type": "Question", "name": "Do you require a deposit?", "acceptedAnswer": { "@type": "Answer", "text": "Yes - a 50% deposit reserves your spot on the schedule and covers materials, with the balance due on completion. Deposits are non-refundable once materials have been purchased." } },
+      { "@type": "Question", "name": "What woods and finishes do you offer?", "acceptedAnswer": { "@type": "Answer", "text": "Common species include walnut, oak, maple, mesquite, and cherry (others by request and availability). Finishes range from food-safe oil and wax for kitchen goods to durable hardwax-oil or polyurethane for furniture." } },
+      { "@type": "Question", "name": "Do you ship, or is it local pickup?", "acceptedAnswer": { "@type": "Answer", "text": "Local pickup in the Rio Grande Valley (the 956) is free, and local delivery may be available for larger pieces. Smaller items like bowls, boards, and kitchen goods can be shipped at cost." } },
+      { "@type": "Question", "name": "Can you build to my exact size or match existing furniture?", "acceptedAnswer": { "@type": "Answer", "text": "Absolutely - custom sizing is the whole point. Send photos, measurements, and any inspiration, and I'll design around your space." } },
+      { "@type": "Question", "name": "Do you do restoration and repairs?", "acceptedAnswer": { "@type": "Answer", "text": "Yes - refinishing, repairs, and bringing old or heirloom pieces back to life is a big part of what I do. Send photos and I'll tell you what's possible." } },
+      { "@type": "Question", "name": "How do I care for my piece?", "acceptedAnswer": { "@type": "Answer", "text": "Every piece comes with care guidance, and there are full guides on the site for cutting boards, rolling pins, and furniture and woodwork. A little oiling and gentle cleaning keeps it looking great for years." } },
+      { "@type": "Question", "name": "What payment methods do you accept?", "acceptedAnswer": { "@type": "Answer", "text": "Cash, Cash App, Zelle, and PayPal." } }
+    ]
+  }
+  </script>
+  <script>/* Re-apply SEO head tags: the DC runtime wipes <head> on hydration. Crawlers read the static HTML above; this restores title/favicon/meta for real visitors. */(function(){var S='title,meta[name=description],meta[name=theme-color],meta[property^="og:"],meta[name^="twitter:"],link[rel~=icon],link[rel="apple-touch-icon"],link[rel=canonical],script[type="application/ld+json"]',T=document.title,K=[].map.call(document.head.querySelectorAll(S),function(n){return n.cloneNode(true)});function R(){if(T&&document.title!==T){document.title=T}for(var i=0;i<K.length;i++){var n=K[i];if(n.tagName=='TITLE')continue;var ex;if(n.tagName=='SCRIPT'){ex=[].some.call(document.head.querySelectorAll('script[type="application/ld+json"]'),function(e){return e.textContent===n.textContent})}else{var a=n.hasAttribute('property')?'property':n.hasAttribute('name')?'name':n.hasAttribute('rel')?'rel':'';ex=document.head.querySelector(a?n.tagName+'['+a+'="'+n.getAttribute(a)+'"]':n.tagName)}if(!ex){document.head.appendChild(n.cloneNode(true))}}}var c=0,t=setInterval(function(){R();if(++c>24){clearInterval(t)}},250);document.addEventListener('DOMContentLoaded',R);window.addEventListener('load',R)})();</script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #faf9f5; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
@@ -218,5 +235,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 <script src="mobile-scroll-fix.js"></script>
 <script src="lightbox.js"></script>
 <script src="form.js"></script>
+<script src="faq.js"></script>
 </body>
 </html>
