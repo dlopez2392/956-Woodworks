@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: #14110E; }
+  @keyframes gFadeUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+  .g-item .g-cap { opacity: 0; transform: translateY(8px); transition: opacity .35s ease, transform .35s ease; }
+  .g-item:hover .g-cap { opacity: 1; transform: none; }
+  .g-item:hover .g-scrim { opacity: 1; }
+</style>
+</helmet>
+<template id="__bundler_thumbnail">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 140"><rect width="200" height="140" fill="#14110E"/><text x="100" y="78" font-family="Georgia, serif" font-size="44" fill="#C6A15B" text-anchor="middle">956</text></svg>
+</template>
+
+<div style="font-family: 'Manrope', system-ui, sans-serif; background: #14110E; color: #EDE7DE; min-height: 100vh;">
+
+  <!-- FILM GRAIN -->
+  <div aria-hidden="true" style="position: fixed; inset: 0; z-index: 90; pointer-events: none; opacity: 0.05; mix-blend-mode: overlay; background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%222%22/%3E%3C/filter%3E%3Crect width=%22300%22 height=%22300%22 filter=%22url(%23n)%22/%3E%3C/svg%3E');"></div>
+
+  <!-- CUSTOM CURSOR -->
+  <div ref="{{ cursorDotRef }}" style="display: none; position: fixed; top: 0; left: 0; width: 8px; height: 8px; border-radius: 999px; background: #C6A15B; z-index: 1000; pointer-events: none;"></div>
+  <div ref="{{ cursorRingRef }}" style="display: none; position: fixed; top: 0; left: 0; width: 32px; height: 32px; border-radius: 999px; border: 1px solid rgba(198,161,91,0.6); z-index: 999; pointer-events: none; align-items: center; justify-content: center; transition: width .25s ease, height .25s ease, background .25s ease;"><span ref="{{ cursorLabelRef }}" style="font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: #C6A15B; font-weight: 600;"></span></div>
+  <!-- NAV -->
+  <nav style="position: sticky; top: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 18px clamp(20px, 5vw, 64px); background: rgba(16,13,11,0.86); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(237,231,222,0.08);">
+    <a href="956 Woodworks.dc.html" style="display: flex; align-items: baseline; gap: 10px; text-decoration: none; color: #EDE7DE;">
+      <span style="font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 600;">956</span>
+      <span style="font-size: 11px; letter-spacing: 3.5px; text-transform: uppercase; color: #C6A15B; font-weight: 600;">Woodworks</span>
+    </a>
+    <div style="display: flex; align-items: center; gap: 26px;">
+      <a href="956 Woodworks.dc.html#craft" style="text-decoration: none; color: #C4BBAE; font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 500;" style-hover="{{ linkHover }}">Craft</a>
+      <a href="956 Woodworks.dc.html#care" style="text-decoration: none; color: #C4BBAE; font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 500;" style-hover="{{ linkHover }}">Care</a>
+      <a href="956 Woodworks.dc.html#contact" style="text-decoration: none; color: #14110E; background: #C6A15B; padding: 10px 18px; border-radius: 999px; font-size: 12px; letter-spacing: 1px; font-weight: 700; text-transform: uppercase; transition: transform .3s;" style-hover="{{ ctaHover }}">Contact</a>
+    </div>
+  </nav>
+
+  <!-- loader for image-slot custom element (clipped so it never paints) -->
+  <div style="position: absolute; left: -9999px; top: 0; width: 0; height: 0; overflow: hidden;">
+    <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="g-loader" hint-size="1px,1px"></x-import>
+  </div>
+
+  <!-- HEADER -->
+  <header style="max-width: 1200px; margin: 0 auto; padding: clamp(56px, 9vw, 110px) clamp(20px, 5vw, 64px) clamp(28px, 4vw, 48px); text-align: center;">
+    <div style="font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: #C6A15B; font-weight: 600; margin-bottom: 20px; opacity: 0; animation: gFadeUp .7s ease .05s forwards;">Selected work</div>
+    <h1 style="font-family: 'Cormorant Garamond', serif; font-weight: 400; font-size: clamp(46px, 8vw, 96px); line-height: 1; margin: 0 0 24px; opacity: 0; animation: gFadeUp .8s ease .15s forwards;">The Gallery</h1>
+    <p style="max-width: 560px; margin: 0 auto; font-size: 17px; line-height: 1.7; color: #A79E92; font-weight: 300; opacity: 0; animation: gFadeUp .9s ease .25s forwards;">A growing collection of custom furniture, woodturned bowls, kitchen pieces and small-batch goods.{{ editorHint }}</p>
+  </header>
+
+  <!-- FILTERS -->
+  <div style="max-width: 1200px; margin: 0 auto; padding: 0 clamp(20px, 5vw, 64px); display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: clamp(32px, 5vw, 52px); opacity: 0; animation: gFadeUp .9s ease .35s forwards;">
+    <sc-for list="{{ filters }}" as="f" hint-placeholder-count="5">
+      <button onClick="{{ f.select }}" style="cursor: pointer; font-family: 'Manrope', sans-serif; font-size: 12.5px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; padding: 10px 20px; border-radius: 999px; border: 1px solid {{ f.border }}; background: {{ f.bg }}; color: {{ f.color }}; transition: all .3s;">{{ f.label }}</button>
+    </sc-for>
+  </div>
+
+  <!-- MASONRY GRID -->
+  <div style="max-width: 1360px; margin: 0 auto; padding: 0 clamp(20px, 5vw, 64px) clamp(70px, 10vw, 120px);">
+    <div ref="{{ gridRef }}" style="column-count: 3; column-gap: 18px;">
+      <sc-for list="{{ items }}" as="it" hint-placeholder-count="12">
+        <div class="g-item" data-cursor="View" onClick="{{ it.open }}" onDoubleClick="{{ it.cancelOpen }}" style="display: {{ it.display }}; break-inside: avoid; margin-bottom: 18px; position: relative; border-radius: 10px; overflow: hidden; cursor: pointer;">
+          <image-slot id="{{ it.slot }}" shape="rect" placeholder="{{ it.ph }}" style="display: block; width: 100%; height: auto; aspect-ratio: {{ it.ar }};"></image-slot>
+          <div class="g-scrim" style="position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .35s ease; background: linear-gradient(to top, rgba(10,8,6,0.82), transparent 55%);"></div>
+          <div class="g-cap" style="position: absolute; left: 16px; bottom: 14px; right: 16px; pointer-events: none;">
+            <div style="font-size: 10.5px; letter-spacing: 2px; text-transform: uppercase; color: #C6A15B; font-weight: 600;">{{ it.catLabel }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div style="max-width: 1000px; margin: 0 auto; padding: 0 clamp(20px, 5vw, 64px) clamp(80px, 12vw, 130px);">
+    <div style="text-align: center; padding: clamp(44px, 6vw, 70px); background: radial-gradient(600px circle at 50% 0%, rgba(198,161,91,0.12), transparent 70%), #17130F; border: 1px solid rgba(237,231,222,0.08); border-radius: 12px;">
+      <h3 style="font-family: 'Cormorant Garamond', serif; font-weight: 400; font-size: clamp(30px, 4.5vw, 50px); line-height: 1.05; margin: 0 0 18px;">See something you love?</h3>
+      <p style="font-size: 16px; line-height: 1.7; color: #A79E92; font-weight: 300; margin: 0 0 30px;">Most pieces are one of a kind &mdash; but I can build something similar just for you.</p>
+      <a href="956 Woodworks.dc.html#contact" style="text-decoration: none; background: #C6A15B; color: #14110E; padding: 16px 32px; border-radius: 999px; font-size: 13.5px; letter-spacing: 1px; font-weight: 700; text-transform: uppercase; transition: transform .3s, box-shadow .3s; display: inline-block;" style-hover="{{ ctaHover }}">Commission a piece</a>
+    </div>
+  </div>
+
+  <!-- LIGHTBOX -->
+  <div onClick="{{ lbClose }}" style="position: fixed; inset: 0; z-index: 300; display: {{ lbDisplay }}; flex-direction: column; align-items: center; justify-content: center; gap: 20px; background: rgba(10,8,6,0.94); backdrop-filter: blur(12px); padding: 4vw; cursor: zoom-out;">
+    <sc-if value="{{ lbOpen }}" hint-placeholder-val="{{ false }}">{{ lbImg }}</sc-if>
+    <div style="text-align: center;">
+      <div style="font-family: 'Cormorant Garamond', serif; font-size: 26px; color: #EDE7DE;">{{ lbTitle }}</div>
+      <div style="font-size: 12px; letter-spacing: 2px; color: #6E665C; margin-top: 4px;">{{ lbCount }}</div>
+    </div>
+    <button aria-label="Previous" onClick="{{ lbPrev }}" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); cursor: pointer; width: 52px; height: 52px; border-radius: 999px; border: 1px solid rgba(237,231,222,0.25); background: rgba(14,11,9,0.6); color: #EDE7DE; font-size: 20px; backdrop-filter: blur(6px);">&larr;</button>
+    <button aria-label="Next" onClick="{{ lbNext }}" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); cursor: pointer; width: 52px; height: 52px; border-radius: 999px; border: 1px solid rgba(237,231,222,0.25); background: rgba(14,11,9,0.6); color: #EDE7DE; font-size: 20px; backdrop-filter: blur(6px);">&rarr;</button>
+    <button aria-label="Close" onClick="{{ lbClose }}" style="position: absolute; top: 20px; right: 20px; cursor: pointer; width: 44px; height: 44px; border-radius: 999px; border: 1px solid rgba(237,231,222,0.25); background: rgba(14,11,9,0.6); color: #EDE7DE; font-size: 18px; backdrop-filter: blur(6px);">&times;</button>
+  </div>
+
+  <footer style="border-top: 1px solid rgba(237,231,222,0.08); background: #100D0B; padding: 40px clamp(20px, 5vw, 64px); text-align: center; font-size: 12px; color: #574F46; letter-spacing: 0.5px;">
+    &copy; {{ year }} 956 Woodworks &middot; Created by Dan Lopez &middot; 956&middot;292&middot;1696 &middot; <a href="mailto:956woodwork@gmail.com" style="color: #574F46;">956woodwork@gmail.com</a>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { filter: 'all', lb: null, filledIds: null };
+
+  renderVals() {
+    const gold = '#C6A15B';
+    const filter = this.state.filter;
+
+    const catLabels = { furniture: 'Custom Furniture', bowls: 'Woodturned Bowls', kitchen: 'Kitchen Goods', shop: 'Shop & Small Batch', custom: 'Custom' };
+
+    const defs = [
+      { id: 'gal-1', cat: 'furniture', title: 'Live-edge walnut table', ar: '4/5' },
+      { id: 'gal-2', cat: 'bowls', title: 'Turned maple bowl', ar: '1/1' },
+      { id: 'gal-3', cat: 'kitchen', title: 'End-grain cutting board', ar: '4/3' },
+      { id: 'gal-4', cat: 'furniture', title: 'Farmhouse dining bench', ar: '4/3' },
+      { id: 'gal-5', cat: 'shop', title: 'Walnut bookmarks', ar: '3/4' },
+      { id: 'gal-6', cat: 'bowls', title: 'Ambrosia maple vessel', ar: '4/5' },
+      { id: 'gal-7', cat: 'kitchen', title: 'Stove-top cover', ar: '1/1' },
+      { id: 'gal-8', cat: 'furniture', title: 'Modern console', ar: '4/5' },
+      { id: 'gal-9', cat: 'shop', title: 'Wood-and-resin earrings', ar: '1/1' },
+      { id: 'gal-10', cat: 'kitchen', title: 'Serving board', ar: '4/3' },
+      { id: 'gal-11', cat: 'bowls', title: 'Segmented bowl', ar: '4/5' },
+      { id: 'gal-12', cat: 'furniture', title: 'Coffee table', ar: '1/1' },
+      { id: 'gal-13', cat: 'kitchen', title: 'Rolling pin', ar: '3/4' },
+      { id: 'gal-14', cat: 'shop', title: 'Gift set', ar: '4/3' },
+      { id: 'gal-15', cat: 'bowls', title: 'Natural-edge bowl', ar: '1/1' },
+      { id: 'gal-16', cat: 'furniture', title: 'Floating shelves', ar: '4/5' },
+      { id: 'gal-17', cat: 'furniture', title: 'Walnut sideboard', ar: '4/3' },
+      { id: 'gal-18', cat: 'furniture', title: 'Live-edge bench', ar: '1/1' },
+      { id: 'gal-19', cat: 'furniture', title: 'Reclaimed barnwood table', ar: '3/4' },
+      { id: 'gal-20', cat: 'furniture', title: 'Farmhouse bed frame', ar: '4/5' },
+      { id: 'gal-221', cat: 'furniture', title: 'Carved copper-inlay coffee table', ar: '4/3' },
+      { id: 'gal-222', cat: 'furniture', title: 'Butcher-block prep island', ar: '4/3' },
+      { id: 'gal-223', cat: 'furniture', title: 'Art deco refinished dresser', ar: '4/3' },
+      { id: 'gal-224', cat: 'furniture', title: 'Spalted maple nesting tables', ar: '4/3' },
+      { id: 'gal-225', cat: 'furniture', title: 'Walnut pedestal side table', ar: '4/3' },
+      { id: 'gal-21', cat: 'bowls', title: 'Cherry burl bowl', ar: '4/3' },
+      { id: 'gal-22', cat: 'bowls', title: 'Spalted maple vessel', ar: '1/1' },
+      { id: 'gal-23', cat: 'bowls', title: 'Hollow-form vase', ar: '3/4' },
+      { id: 'gal-24', cat: 'bowls', title: 'Live-edge platter', ar: '4/5' },
+      { id: 'gal-25', cat: 'kitchen', title: 'Charcuterie board', ar: '4/3' },
+      { id: 'gal-26', cat: 'kitchen', title: 'Utensil set', ar: '1/1' },
+      { id: 'gal-27', cat: 'kitchen', title: 'Cheese board', ar: '3/4' },
+      { id: 'gal-28', cat: 'kitchen', title: 'Trivet set', ar: '4/5' },
+      { id: 'gal-207', cat: 'kitchen', title: 'Engraved cutting board', ar: '4/3' },
+      { id: 'gal-208', cat: 'kitchen', title: 'Striped butcher block', ar: '4/3' },
+      { id: 'gal-209', cat: 'kitchen', title: 'Turned rolling pins', ar: '3/4' },
+      { id: 'gal-210', cat: 'kitchen', title: 'Mahogany & maple board', ar: '4/3' },
+      { id: 'gal-113', cat: 'shop', title: 'Wood keychains', ar: '4/3' },
+      { id: 'gal-202', cat: 'shop', title: 'Soap dish', ar: '4/3' },
+      { id: 'gal-203', cat: 'shop', title: 'Wood bookmarks', ar: '4/3' },
+      { id: 'gal-204', cat: 'shop', title: 'Succulent planters', ar: '4/3' },
+      { id: 'gal-205', cat: 'shop', title: 'Wood conditioner tins', ar: '4/3' },
+      { id: 'gal-206', cat: 'shop', title: 'Wooden drop earrings', ar: '3/4' },
+      { id: 'gal-33', cat: 'custom', title: 'Custom built-in cabinet', ar: '4/5' },
+      { id: 'gal-34', cat: 'custom', title: 'Commissioned headboard', ar: '4/3' },
+      { id: 'gal-35', cat: 'custom', title: 'Custom entry table', ar: '1/1' },
+      { id: 'gal-36', cat: 'custom', title: 'Personalized cutting board', ar: '3/4' },
+      { id: 'gal-37', cat: 'custom', title: 'Custom bar cart', ar: '4/5' },
+      { id: 'gal-38', cat: 'custom', title: 'Made-to-order shelving', ar: '4/3' },
+      { id: 'gal-39', cat: 'custom', title: 'Custom dining set', ar: '1/1' },
+      { id: 'gal-41', cat: 'custom', title: 'Custom wine rack', ar: '4/3' },
+      { id: 'gal-42', cat: 'custom', title: 'Custom media console', ar: '3/4' },
+      { id: 'gal-201', cat: 'custom', title: 'Refinished waterfall dresser', ar: '4/3' },
+      { id: 'gal-211', cat: 'custom', title: 'Highland cow shadow box', ar: '1/1' },
+      { id: 'gal-212', cat: 'custom', title: 'Summer layered signs', ar: '4/3' },
+      { id: 'gal-213', cat: 'custom', title: 'Butcher-block island top', ar: '4/3' },
+      { id: 'gal-214', cat: 'custom', title: 'Live-edge serving board', ar: '4/3' },
+      { id: 'gal-215', cat: 'custom', title: 'Serving tray with handles', ar: '4/3' },
+    ];
+
+    // On the public (exported) site, hide frames with no photo. In the editor
+    // (host present) keep them visible so photos can still be dropped in.
+    const isEditor = typeof window !== 'undefined' && !!window.omelette;
+    const filled = this.state.filledIds; // null until loaded
+    const items = defs.map((d, i) => ({
+      slot: d.id,
+      ph: d.title,
+      title: d.title,
+      ar: d.ar,
+      catLabel: catLabels[d.cat],
+      display: ((filter === 'all' || filter === d.cat) && (isEditor || !filled || filled.has(d.id))) ? 'block' : 'none',
+      open: () => this._lbOpen(i),
+      cancelOpen: () => { clearTimeout(this._lbT); },
+    }));
+    this._defs = defs;
+
+    const filterDefs = [
+      { key: 'all', label: 'All' },
+      { key: 'furniture', label: 'Furniture' },
+      { key: 'bowls', label: 'Bowls' },
+      { key: 'kitchen', label: 'Kitchen' },
+      { key: 'shop', label: 'Shop' },
+      { key: 'custom', label: 'Custom' },
+    ];
+    const filters = filterDefs.map((f) => {
+      const active = filter === f.key;
+      return {
+        label: f.label,
+        select: () => this.setState({ filter: f.key }),
+        bg: active ? gold : 'transparent',
+        color: active ? '#14110E' : '#C4BBAE',
+        border: active ? gold : 'rgba(237,231,222,0.2)',
+      };
+    });
+
+    const lb = this.state.lb;
+    const cur = (lb != null && this._lbList && this._lbList[lb]) ? this._lbList[lb] : null;
+
+    return {
+      editorHint: isEditor ? ' Drag your own photos into any frame \u2014 each one saves in place.' : '',
+      items, filters,
+      lbDisplay: cur ? 'flex' : 'none',
+      lbOpen: !!cur,
+      lbImg: cur ? React.createElement('img', {
+        src: cur.src, alt: '',
+        onClick: (e) => { if (e && e.stopPropagation) e.stopPropagation(); },
+        style: { maxWidth: '92%', maxHeight: '76vh', borderRadius: 10, boxShadow: '0 40px 90px rgba(0,0,0,0.7)', cursor: 'default' },
+      }) : null,
+      lbSrc: cur ? cur.src : '',
+      lbTitle: cur ? cur.title : '',
+      lbCount: cur ? (lb + 1) + ' of ' + this._lbList.length : '',
+      lbClose: () => this.setState({ lb: null }),
+      lbStop: (e) => { if (e && e.stopPropagation) e.stopPropagation(); },
+      lbPrev: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.setState((s) => ({ lb: (s.lb - 1 + this._lbList.length) % this._lbList.length })); },
+      lbNext: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.setState((s) => ({ lb: (s.lb + 1) % this._lbList.length })); },
+      cursorDotRef: (el) => { this._cDot = el; },
+      cursorRingRef: (el) => { this._cRing = el; },
+      cursorLabelRef: (el) => { this._cLabel = el; },
+      year: new Date().getFullYear(),
+      linkHover: { color: '#EDE7DE' },
+      ctaHover: { transform: 'translateY(-2px)', boxShadow: '0 14px 30px -10px rgba(198,161,91,0.6)' },
+      gridRef: (el) => { this._grid = el; },
+    };
+  }
+
+  _lbOpen(i) {
+    clearTimeout(this._lbT);
+    // Delay slightly so a double-click (image reframe while editing) can cancel it.
+    this._lbT = setTimeout(() => {
+      const nodes = Array.prototype.slice.call(document.querySelectorAll('.g-item image-slot'));
+      const list = [];
+      nodes.forEach((n, j) => {
+        if (!n.hasAttribute('data-filled')) return;
+        const img = n.shadowRoot && n.shadowRoot.querySelector('.frame img');
+        if (img && img.src) list.push({ src: img.src, title: '', j });
+      });
+      const pos = list.findIndex ? list.findIndex((x) => x.j === i) : -1;
+      if (pos === -1) return;
+      this._lbList = list;
+      this.setState({ lb: pos });
+    }, 260);
+  }
+
+  componentDidMount() {
+    // Load the set of filled slots so the public site can hide empty frames.
+    if (!window.omelette) {
+      fetch('.image-slots.state.json')
+        .then((r) => (r.ok ? r.json() : null))
+        .then((j) => {
+          if (!j) return;
+          const s = new Set();
+          Object.keys(j).forEach((k) => { if (j[k] && j[k].u) s.add(k); });
+          this.setState({ filledIds: s });
+        })
+        .catch(() => {});
+    }
+    this._onResize = () => {
+      if (!this._grid) return;
+      const w = window.innerWidth;
+      this._grid.style.columnCount = w < 640 ? '1' : (w < 1000 ? '2' : '3');
+    };
+    window.addEventListener('resize', this._onResize, { passive: true });
+    this._onResize();
+
+    // Esc closes the lightbox; arrows navigate
+    this._onKey = (e) => {
+      if (this.state.lb == null) return;
+      if (e.key === 'Escape') this.setState({ lb: null });
+      if (e.key === 'ArrowLeft') this.setState((s) => ({ lb: (s.lb - 1 + this._lbList.length) % this._lbList.length }));
+      if (e.key === 'ArrowRight') this.setState((s) => ({ lb: (s.lb + 1) % this._lbList.length }));
+    };
+    window.addEventListener('keydown', this._onKey);
+
+    // Custom cursor (fine pointers only)
+    if (window.matchMedia && window.matchMedia('(pointer: fine)').matches && this._cDot && this._cRing) {
+      const dot = this._cDot, ring = this._cRing, label = this._cLabel;
+      let mx = -100, my = -100, rx = -100, ry = -100;
+      this._onCur = (e) => {
+        mx = e.clientX; my = e.clientY;
+        dot.style.transform = 'translate(' + (mx - 4) + 'px,' + (my - 4) + 'px)';
+        const t = e.target && e.target.closest ? e.target.closest('[data-cursor]') : null;
+        ring.style.width = ring.style.height = t ? '64px' : '32px';
+        ring.style.background = t ? 'rgba(198,161,91,0.14)' : 'transparent';
+        if (label) label.textContent = t ? t.getAttribute('data-cursor') : '';
+      };
+      window.addEventListener('mousemove', this._onCur, { passive: true });
+      const loop = () => {
+        rx += (mx - rx) * 0.16; ry += (my - ry) * 0.16;
+        const s = parseFloat(ring.style.width || '32') / 2;
+        ring.style.transform = 'translate(' + (rx - s) + 'px,' + (ry - s) + 'px)';
+        this._cRaf = requestAnimationFrame(loop);
+      };
+      loop();
+      dot.style.display = 'block';
+      ring.style.display = 'flex';
+    }
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this._onResize);
+    window.removeEventListener('keydown', this._onKey);
+    if (this._onCur) window.removeEventListener('mousemove', this._onCur);
+    if (this._cRaf) cancelAnimationFrame(this._cRaf);
+    clearTimeout(this._lbT);
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: #14110E; }
+  @keyframes cbFadeUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+</style>
+</helmet>
+<template id="__bundler_thumbnail">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 140"><rect width="200" height="140" fill="#14110E"/><text x="100" y="78" font-family="Georgia, serif" font-size="44" fill="#C6A15B" text-anchor="middle">956</text></svg>
+</template>
+
+<div style="font-family: 'Manrope', system-ui, sans-serif; background: #14110E; color: #EDE7DE; min-height: 100vh;">
+  <div aria-hidden="true" style="position: fixed; inset: 0; z-index: 90; pointer-events: none; opacity: 0.05; mix-blend-mode: overlay; background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%222%22/%3E%3C/filter%3E%3Crect width=%22300%22 height=%22300%22 filter=%22url(%23n)%22/%3E%3C/svg%3E');"></div>
+  <!-- NAV -->
+  <nav style="position: sticky; top: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 18px clamp(20px, 5vw, 64px); background: rgba(16,13,11,0.86); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(237,231,222,0.08);">
+    <a href="956 Woodworks.dc.html" style="display: flex; align-items: baseline; gap: 10px; text-decoration: none; color: #EDE7DE;">
+      <span style="font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 600;">956</span>
+      <span style="font-size: 11px; letter-spacing: 3.5px; text-transform: uppercase; color: #C6A15B; font-weight: 600;">Woodworks</span>
+    </a>
+    <a href="956 Woodworks.dc.html" style="text-decoration: none; color: #C4BBAE; font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 500;" style-hover="{{ linkHover }}">&larr; Home</a>
+  </nav>
+
+  <!-- HEADER -->
+  <header style="max-width: 1100px; margin: 0 auto; padding: clamp(56px, 9vw, 110px) clamp(20px, 5vw, 64px) clamp(30px, 5vw, 60px); text-align: center;">
+    <div style="font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: #C6A15B; font-weight: 600; margin-bottom: 20px; opacity: 0; animation: cbFadeUp .7s ease .05s forwards;">Care guide</div>
+    <h1 style="font-family: 'Cormorant Garamond', serif; font-weight: 400; font-size: clamp(42px, 7vw, 88px); line-height: 1; margin: 0 0 24px; opacity: 0; animation: cbFadeUp .8s ease .15s forwards;">Furniture &amp; Woodwork Care</h1>
+    <p style="max-width: 560px; margin: 0 auto; font-size: 17px; line-height: 1.7; color: #A79E92; font-weight: 300; opacity: 0; animation: cbFadeUp .9s ease .25s forwards;">Handmade furniture and turned pieces are meant to be passed down. A little regular care keeps the wood, and the finish, looking the way it did the day it left the shop.</p>
+  </header>
+
+  <div style="max-width: 1000px; margin: 0 auto; padding: 0 clamp(20px, 5vw, 64px) clamp(80px, 12vw, 140px);">
+    <sc-for list="{{ sections }}" as="sec" hint-placeholder-count="5">
+      <section style="margin-bottom: 30px; background: {{ sec.bg }}; border: 1px solid rgba(237,231,222,0.08); border-radius: 12px; padding: clamp(28px, 4vw, 48px);">
+        <div style="display: flex; align-items: baseline; gap: 16px; margin-bottom: 26px;">
+          <span style="font-family: 'Cormorant Garamond', serif; font-size: 30px; color: #C6A15B; line-height: 1;">{{ sec.num }}</span>
+          <h2 style="font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: clamp(24px, 3.2vw, 36px); line-height: 1.15; margin: 0;">{{ sec.title }}</h2>
+        </div>
+        <sc-if value="{{ sec.intro }}" hint-placeholder-val="{{ true }}">
+          <p style="font-size: 16px; line-height: 1.8; color: #C4BBAE; font-weight: 300; margin: 0 0 22px;">{{ sec.intro }}</p>
+        </sc-if>
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <sc-for list="{{ sec.items }}" as="it" hint-placeholder-count="4">
+            <div style="display: flex; gap: 14px; align-items: flex-start;">
+              <span style="flex: none; margin-top: 9px; width: 6px; height: 6px; border-radius: 999px; background: {{ it.dot }};"></span>
+              <p style="font-size: 15.5px; line-height: 1.7; color: #A79E92; font-weight: 300; margin: 0;"><span style="color: {{ it.leadColor }}; font-weight: 600;">{{ it.lead }}</span>{{ it.text }}</p>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </sc-for>
+
+    <!-- CTA -->
+    <div style="text-align: center; margin-top: 56px; padding: clamp(40px, 6vw, 64px); background: radial-gradient(600px circle at 50% 0%, rgba(198,161,91,0.12), transparent 70%), #17130F; border: 1px solid rgba(237,231,222,0.08); border-radius: 12px;">
+      <h3 style="font-family: 'Cormorant Garamond', serif; font-weight: 400; font-size: clamp(28px, 4vw, 44px); line-height: 1.1; margin: 0 0 18px;">Have a piece made for you?</h3>
+      <p style="font-size: 16px; line-height: 1.7; color: #A79E92; font-weight: 300; margin: 0 0 30px;">Every piece is handmade to order by Dan Lopez, and finished so it ages well for generations.</p>
+      <a href="956 Woodworks.dc.html#contact" style="text-decoration: none; background: #C6A15B; color: #14110E; padding: 15px 30px; border-radius: 999px; font-size: 13.5px; letter-spacing: 1px; font-weight: 700; text-transform: uppercase; transition: transform .3s, box-shadow .3s; display: inline-block;" style-hover="{{ ctaHover }}">Commission a piece</a>
+    </div>
+  </div>
+
+  <footer style="border-top: 1px solid rgba(237,231,222,0.08); background: #100D0B; padding: 40px clamp(20px, 5vw, 64px); text-align: center; font-size: 12px; color: #574F46; letter-spacing: 0.5px;">
+    &copy; {{ year }} 956 Woodworks &middot; Created by Dan Lopez &middot; 956&middot;292&middot;1696 &middot; <a href="mailto:956woodwork@gmail.com" style="color: #574F46;">956woodwork@gmail.com</a>
+  </footer>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const gold = '#C6A15B';
+    const doDont = (isDo, text) => ({ dot: isDo ? gold : '#7A5C4E', leadColor: isDo ? gold : '#C08A6E', lead: isDo ? 'Do  ' : 'Don\u2019t  ', text });
+    const plain = (text) => ({ dot: 'rgba(237,231,222,0.3)', leadColor: '#EDE7DE', lead: '', text });
+
+    const sections = [
+      {
+        num: '01', title: 'Everyday cleaning', bg: '#1C1815',
+        intro: 'Most day-to-day care is just keeping dust and grit from grinding into the grain.',
+        items: [
+          doDont(true, 'dust regularly with a soft, dry, lint-free cloth \u2014 dust left to build up can actually scratch the finish over time.'),
+          doDont(true, 'wipe up spills the moment they happen, then dry the spot fully.'),
+          doDont(true, 'use a barely damp cloth with mild soap and water for grease or grime, then dry immediately.'),
+          doDont(false, 'use silicone- or ammonia-based sprays, harsh chemical cleaners, or abrasive pads on a finished surface.'),
+          doDont(false, 'let water or other liquids sit \u2014 standing moisture can stain or cloud the finish.'),
+        ],
+      },
+      {
+        num: '02', title: 'Protect it in daily use', bg: '#191512', intro: '',
+        items: [
+          plain('Use coasters, trivets, and placemats under drinks, hot dishes, and cookware \u2014 heat and moisture are the two biggest threats to a finish.'),
+          plain('Felt pads under lamps, vases, or decor prevent scratches and ring marks on tabletops.'),
+          plain('Lift, don\u2019t drag, when moving a piece \u2014 dragging can dent or scuff both the wood and the floor.'),
+          plain('Rotate decor items and rearrange occasionally so the surface ages and fades evenly.'),
+        ],
+      },
+      {
+        num: '03', title: 'Keep it out of sun and swings in humidity', bg: '#1C1815', intro: '',
+        items: [
+          plain('Direct sunlight fades and dries out wood over time \u2014 keep pieces out of direct light, or use curtains or blinds during peak hours.'),
+          plain('Keep furniture away from radiators, heating vents, fireplaces, and AC vents; both heat and dry air pull moisture from the wood.'),
+          plain('Wood naturally expands and contracts with humidity. Steady, moderate conditions in the room \u2014 not bone dry, not damp \u2014 keep it from warping or cracking.'),
+        ],
+      },
+      {
+        num: '04', title: 'Oiling and waxing', bg: '#191512',
+        intro: 'How often depends on the finish, but most oiled or waxed pieces benefit from a refresh once or twice a year.',
+        items: [
+          plain('Wipe the surface clean and fully dry before treating it.'),
+          plain('Work a small amount of furniture wax or a wood-safe oil into the grain with a soft cloth, in the direction of the grain.'),
+          plain('Let it absorb, then buff with a clean, dry cloth to a soft sheen \u2014 more isn\u2019t better; a thin, even coat is all it needs.'),
+          plain('If in doubt about your specific piece, ask what finish was used \u2014 it determines which products are safe.'),
+        ],
+      },
+      {
+        num: '05', title: 'A note on aging gracefully', bg: '#1C1815', intro: '',
+        items: [
+          plain('Real wood is meant to develop a patina \u2014 small color shifts and a deepening grain are signs of a life well-lived, not damage.'),
+          plain('Check joints, finish, and hardware occasionally, and address small issues \u2014 a loose joint, a dull patch \u2014 before they become bigger repairs.'),
+          plain('Handled this way, a solid wood piece isn\u2019t just furniture. It\u2019s something that gets handed down.'),
+        ],
+      },
+    ];
+
+    return {
+      sections,
+      year: new Date().getFullYear(),
+      linkHover: { color: '#EDE7DE' },
+      ctaHover: { transform: 'translateY(-2px)', boxShadow: '0 14px 30px -10px rgba(198,161,91,0.6)' },
+    };
+  }
+}
+
+</script>
+</body>
+</html>
