@@ -554,6 +554,20 @@ class Component extends DCLogic {
   }
 
   componentDidMount() {
+    // The DC runtime doesn't bind onPointerDown template handlers, so the
+    // before/after slider ("In the room" / "Finished piece") never dragged.
+    // Wire it here off the container ref: delegate to the ew-resize handle and
+    // reuse _compareDrag, which updates state.comparePos (the source of truth)
+    // so drags survive re-renders. __compareBound stops any external stopgap
+    // script from double-binding.
+    window.__compareBound = true;
+    if (this._compareEl) {
+      this._compareEl.addEventListener('pointerdown', (e) => {
+        const h = this._compareEl.querySelector('[style*=ew-resize]');
+        if (h && (e.target === h || h.contains(e.target))) this._compareDrag(e);
+      });
+    }
+
     // Nav solidify on scroll
     this._onScroll = () => {
       const s = window.scrollY > 40;
