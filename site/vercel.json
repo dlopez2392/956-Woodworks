@@ -1,5 +1,6 @@
 {
   "redirects": [
+    { "source": "/:path*", "has": [{ "type": "host", "value": "www.956woodworks.com" }], "destination": "https://956woodworks.com/:path*", "permanent": true },
     { "source": "/Gallery.dc.html", "destination": "/gallery.html" },
     { "source": "/Cutting Board Care.dc.html", "destination": "/cutting-board-care.html" },
     { "source": "/Cutting%20Board%20Care.dc.html", "destination": "/cutting-board-care.html" },
