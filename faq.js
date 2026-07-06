@@ -71,28 +71,32 @@
     sec.innerHTML = html;
     contact.parentElement.insertBefore(sec, contact);
 
-    var qs = sec.querySelectorAll('.faq-q');
-    qs.forEach(function (q) {
-      q.addEventListener('click', function () {
-        var isOpen = q.getAttribute('aria-expanded') === 'true';
-        qs.forEach(function (o) {
-          o.setAttribute('aria-expanded', 'false');
-          o.nextElementSibling.style.maxHeight = '0';
-        });
-        if (!isOpen) {
-          q.setAttribute('aria-expanded', 'true');
-          var panel = q.nextElementSibling;
-          panel.style.maxHeight = panel.scrollHeight + 'px';
-        }
-      });
-    });
-    window.addEventListener('resize', function () {
-      sec.querySelectorAll('.faq-q[aria-expanded=true]').forEach(function (q) {
-        q.nextElementSibling.style.maxHeight = q.nextElementSibling.scrollHeight + 'px';
-      });
-    });
     return true;
   }
+
+  // Delegated on document so it survives the DC runtime re-processing the
+  // injected nodes (per-element listeners get dropped; delegation doesn't).
+  document.addEventListener('click', function (e) {
+    var q = e.target.closest && e.target.closest('.faq-q');
+    var faq = document.getElementById('faq');
+    if (!q || !faq || !faq.contains(q)) return;
+    var isOpen = q.getAttribute('aria-expanded') === 'true';
+    faq.querySelectorAll('.faq-q').forEach(function (o) {
+      o.setAttribute('aria-expanded', 'false');
+      o.nextElementSibling.style.maxHeight = '0';
+    });
+    if (!isOpen) {
+      q.setAttribute('aria-expanded', 'true');
+      q.nextElementSibling.style.maxHeight = q.nextElementSibling.scrollHeight + 'px';
+    }
+  });
+  window.addEventListener('resize', function () {
+    var faq = document.getElementById('faq');
+    if (!faq) return;
+    faq.querySelectorAll('.faq-q[aria-expanded=true]').forEach(function (q) {
+      q.nextElementSibling.style.maxHeight = q.nextElementSibling.scrollHeight + 'px';
+    });
+  });
 
   var n = 0, t = setInterval(function () { if (build() || ++n > 60) clearInterval(t); }, 300);
 })();
