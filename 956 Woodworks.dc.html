@@ -8,6 +8,32 @@
 <body>
 <x-dc>
 <helmet>
+<script>
+/* Per-page image-slot state: redirect the runtime's fetch of the full
+   .image-slots.state.json (~4MB, all 87 photos) to the slim home file
+   (29 slots). Falls back to the full file if the page file is missing.
+   After ANY image change or re-export, run: node tools/sync-image-state.js */
+(function () {
+  if (window.__slotStateRedirect) return; window.__slotStateRedirect = 1;
+  var F = window.fetch, FULL = '.image-slots.state.json', PAGE = '.image-slots.home.state.json', C = null;
+  window.fetch = function (u, o) {
+    try {
+      if (typeof u === 'string' && u.split('?')[0].split('/').pop() === FULL) {
+        /* Cache the response: the bundle evaluates the image-slot module
+           twice on some pages, fetching the state file twice. */
+        if (!C) {
+          C = F.call(window, PAGE, o).then(function (r) {
+            return r.ok ? r : F.call(window, u, o);
+          }).catch(function () { return F.call(window, u, o); });
+          C.catch(function () { C = null; });
+        }
+        return C.then(function (r) { return r.clone(); });
+      }
+    } catch (e) {}
+    return F.call(window, u, o);
+  };
+})();
+</script>
 <title>956 Woodworks — Handmade Furniture &amp; Woodturning in the Rio Grande Valley</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Custom handmade furniture, restorations, woodturned bowls, and kitchen goods built by hand by Dan Lopez in the Rio Grande Valley (the 956). Commission a one-of-a-kind piece built to outlast.">

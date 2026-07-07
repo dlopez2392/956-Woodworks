@@ -8,6 +8,32 @@
 <body>
 <x-dc>
 <helmet>
+<script>
+/* Per-page image-slot state: redirect the runtime's fetch of the full
+   .image-slots.state.json (~4MB, all 87 photos) to the slim gallery file
+   (58 slots). Falls back to the full file if the page file is missing.
+   After ANY image change or re-export, run: node tools/sync-image-state.js */
+(function () {
+  if (window.__slotStateRedirect) return; window.__slotStateRedirect = 1;
+  var F = window.fetch, FULL = '.image-slots.state.json', PAGE = '.image-slots.gallery.state.json', C = null;
+  window.fetch = function (u, o) {
+    try {
+      if (typeof u === 'string' && u.split('?')[0].split('/').pop() === FULL) {
+        /* Cache the response: the bundle evaluates the image-slot module
+           twice on some pages, fetching the state file twice. */
+        if (!C) {
+          C = F.call(window, PAGE, o).then(function (r) {
+            return r.ok ? r : F.call(window, u, o);
+          }).catch(function () { return F.call(window, u, o); });
+          C.catch(function () { C = null; });
+        }
+        return C.then(function (r) { return r.clone(); });
+      }
+    } catch (e) {}
+    return F.call(window, u, o);
+  };
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">

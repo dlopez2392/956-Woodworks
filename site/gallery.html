@@ -3,6 +3,32 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>
+  /* Per-page image-slot state: the DC runtime fetches .image-slots.state.json
+     (all 87 photos, ~4MB base64); this page only needs the 58 gallery slots, so
+     redirect that fetch to the slim per-page file. Falls back to the full file
+     if the page file is missing (e.g. after a re-export without re-splitting). */
+  (function () {
+    if (window.__slotStateRedirect) return; window.__slotStateRedirect = 1;
+    var F = window.fetch, FULL = '.image-slots.state.json', PAGE = '.image-slots.gallery.state.json', C = null;
+    window.fetch = function (u, o) {
+      try {
+        if (typeof u === 'string' && u.split('?')[0].split('/').pop() === FULL) {
+          /* Cache the response: the bundle evaluates the image-slot module
+             twice on some pages, fetching the state file twice. */
+          if (!C) {
+            C = F.call(window, PAGE, o).then(function (r) {
+              return r.ok ? r : F.call(window, u, o);
+            }).catch(function () { return F.call(window, u, o); });
+            C.catch(function () { C = null; });
+          }
+          return C.then(function (r) { return r.clone(); });
+        }
+      } catch (e) {}
+      return F.call(window, u, o);
+    };
+  })();
+  </script>
   <title>Gallery — 956 Woodworks | Custom Furniture &amp; Woodturning</title>
   <meta name="description" content="A look at recent 956 Woodworks commissions and shop projects — custom furniture, woodturned bowls, cutting boards, and restorations built by hand in the Rio Grande Valley.">
   <link rel="canonical" href="https://956woodworks.com/gallery.html">
