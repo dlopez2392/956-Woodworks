@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -29,6 +29,10 @@
     };
   })();
   </script>
+  <!-- Start the image-slot state download at parse time (the runtime only
+       fetches it after boot, ~2-3s in); crossorigin matches fetch()'s default
+       cors/same-origin credentials so the preload is reused, not duplicated. -->
+  <link rel="preload" href=".image-slots.home.state.json" as="fetch" crossorigin>
   <title>956 Woodworks — Handmade Furniture &amp; Woodturning in the Rio Grande Valley</title>
   <meta name="description" content="Custom handmade furniture, restorations, woodturned bowls, and kitchen goods built by hand by Dan Lopez in the Rio Grande Valley (the 956). Commission a one-of-a-kind piece built to outlast.">
   <link rel="canonical" href="https://956woodworks.com/">
@@ -286,6 +290,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 <script src="lightbox.js"></script>
 <script src="form.js"></script>
 <script src="faq.js"></script>
+<script src="a11y.js"></script>
 <script defer src="/_vercel/insights/script.js"></script>
 <script>window.si=window.si||function(){(window.siq=window.siq||[]).push(arguments);};</script>
 <script defer src="/_vercel/speed-insights/script.js"></script>
