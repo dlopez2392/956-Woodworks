@@ -20,7 +20,15 @@
     return [].slice.call(scope.querySelectorAll('image-slot')).filter(eligible);
   }
 
-  var ov, imgEl, countEl, group = [], idx = 0;
+  var ov, imgEl, countEl, capEl, group = [], idx = 0;
+
+  // Piece category from the gallery card's caption (e.g. "Custom Furniture");
+  // home-page photos have no captions and show none.
+  function capOf(slot) {
+    var item = slot.closest && slot.closest('.g-item');
+    var c = item && item.querySelector('.g-cap');
+    return c ? c.textContent.trim().replace(/\s+/g, ' ') : '';
+  }
 
   function ensure() {
     if (ov) return;
@@ -33,11 +41,13 @@
       '<button data-lb="close" aria-label="Close" style="' + btn + 'position:absolute;top:16px;right:18px;width:46px;height:46px;font-size:24px;">&times;</button>' +
       '<button data-lb="prev" aria-label="Previous" style="' + btn + 'position:absolute;left:14px;top:50%;transform:translateY(-50%);width:50px;height:50px;font-size:28px;">&#8249;</button>' +
       '<button data-lb="next" aria-label="Next" style="' + btn + 'position:absolute;right:14px;top:50%;transform:translateY(-50%);width:50px;height:50px;font-size:28px;">&#8250;</button>' +
+      '<div data-lb="cap" style="position:absolute;bottom:44px;left:0;right:0;text-align:center;color:#EDE7DE;font:400 17px/1.3 \'Cormorant Garamond\',Georgia,serif;letter-spacing:.5px;"></div>' +
       '<div data-lb="count" style="position:absolute;bottom:20px;left:0;right:0;text-align:center;color:#C6A15B;font:600 12px/1 system-ui,sans-serif;letter-spacing:2px;"></div>' +
-      '<img data-lb="img" alt="956 Woodworks piece" style="max-width:92vw;max-height:86vh;object-fit:contain;border-radius:6px;box-shadow:0 24px 70px rgba(0,0,0,.65);">';
+      '<img data-lb="img" alt="956 Woodworks piece" style="max-width:92vw;max-height:80vh;object-fit:contain;border-radius:6px;box-shadow:0 24px 70px rgba(0,0,0,.65);">';
     document.body.appendChild(ov);
     imgEl = ov.querySelector('[data-lb=img]');
     countEl = ov.querySelector('[data-lb=count]');
+    capEl = ov.querySelector('[data-lb=cap]');
     ov.addEventListener('click', function (e) {
       var a = e.target.getAttribute && e.target.getAttribute('data-lb');
       if (a === 'close' || e.target === ov) close();
@@ -48,6 +58,9 @@
 
   function render() {
     imgEl.src = srcOf(group[idx]) || '';
+    var cap = capOf(group[idx]);
+    capEl.textContent = cap;
+    imgEl.alt = cap ? cap + ' — handcrafted by 956 Woodworks' : '956 Woodworks piece';
     var multi = group.length > 1;
     ov.querySelector('[data-lb=prev]').style.display = multi ? 'flex' : 'none';
     ov.querySelector('[data-lb=next]').style.display = multi ? 'flex' : 'none';

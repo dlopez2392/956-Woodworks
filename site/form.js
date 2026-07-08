@@ -15,9 +15,59 @@
     return {
       name: scope.querySelector('input[placeholder="Your name"]'),
       email: scope.querySelector('input[placeholder="Your email"]'),
-      type: scope.querySelector('select'),
+      type: scope.querySelector('select:not(#ww-budget)'),
+      budget: scope.querySelector('#ww-budget'),
       msg: scope.querySelector('textarea')
     };
+  }
+
+  // Optional budget range + "text me photos" hint. Injected siblings survive
+  // the DC runtime's re-renders (listeners don't, but neither needs one); the
+  // enhance loop below re-injects if a future render ever drops them.
+  var BUDGETS = ['Budget (optional)', 'Under $200', '$200 – $500', '$500 – $1,500', '$1,500+', 'Not sure yet'];
+  function enhanceForm() {
+    var type = document.querySelector('select:not(#ww-budget)');
+    var ta = document.querySelector('textarea');
+    if (!type || !ta || type.parentElement !== ta.parentElement) return;
+    if (!document.getElementById('ww-budget')) {
+      var b = type.cloneNode(false); // copies the input styling, not the options
+      b.removeAttribute('data-dc-tpl');
+      b.id = 'ww-budget';
+      b.setAttribute('aria-label', 'Budget range (optional)');
+      for (var i = 0; i < BUDGETS.length; i++) {
+        var o = document.createElement('option');
+        o.value = i === 0 ? '' : BUDGETS[i];
+        o.textContent = BUDGETS[i];
+        b.appendChild(o);
+      }
+      ta.parentElement.insertBefore(b, ta);
+    }
+    if (!document.getElementById('ww-photo-hint')) {
+      var p = document.createElement('p');
+      p.id = 'ww-photo-hint';
+      p.style.cssText = 'margin:-6px 0 14px;font-family:Manrope,sans-serif;font-size:13px;color:#968D80;';
+      p.innerHTML = 'Have inspiration photos? Text them to ' +
+        '<a href="sms:9562921696" style="color:#C6A15B;text-decoration:none;">956-292-1696</a>' +
+        ' — it helps me quote faster.';
+      ta.parentElement.insertBefore(p, ta.nextSibling);
+    }
+    // "Text Me" next to the DM on Instagram CTA, cloned so it matches.
+    if (!document.getElementById('ww-sms-btn')) {
+      var dm = null, as = document.querySelectorAll('a');
+      for (var j = 0; j < as.length; j++) {
+        if (/dm on instagram/i.test(as[j].textContent || '')) { dm = as[j]; break; }
+      }
+      if (dm) {
+        var sms = dm.cloneNode(false);
+        sms.removeAttribute('data-dc-tpl');
+        sms.id = 'ww-sms-btn';
+        sms.href = 'sms:9562921696';
+        sms.removeAttribute('target');
+        sms.removeAttribute('rel');
+        sms.textContent = 'Text Me';
+        dm.parentElement.insertBefore(sms, dm);
+      }
+    }
   }
 
   function noteEl(btn) {
@@ -26,7 +76,7 @@
   }
   function say(btn, text, color) {
     var p = noteEl(btn);
-    if (p) { p.textContent = text; p.style.color = color || '#6E665C'; }
+    if (p) { p.textContent = text; p.style.color = color || '#968D80'; }
   }
 
   // Refresh the now-inaccurate "Opens your email app" helper text once present.
@@ -41,7 +91,14 @@
       }
     }
   }
-  var hn = 0, ht = setInterval(function () { fixHelper(); if (++hn > 30) clearInterval(ht); }, 500);
+  var hn = 0, ht = setInterval(function () {
+    fixHelper();
+    enhanceForm();
+    if (++hn > 30) {
+      clearInterval(ht);
+      setInterval(enhanceForm, 10000); // maintenance: re-inject if a re-render drops the extras
+    }
+  }, 500);
 
   function isContactSendButton(btn) {
     if (!btn || !/send request|sending|sent/i.test(btn.textContent || '')) return false;
@@ -56,6 +113,7 @@
     var name = (f.name && f.name.value || '').trim();
     var email = (f.email && f.email.value || '').trim();
     var type = (f.type && f.type.value || '').trim();
+    var budget = (f.budget && f.budget.value || '').trim();
     var msg = (f.msg && f.msg.value || '').trim();
 
     if (!name || !email || !msg) { say(btn, 'Please add your name, email, and a message.', '#E0A33A'); return; }
@@ -78,6 +136,7 @@
           name: name,
           email: email,
           piece_type: type,
+          budget: budget || '(not specified)',
           message: msg
         })
       });
@@ -88,6 +147,7 @@
         btn.textContent = 'Sent ✓';
         if (f.name) f.name.value = '';
         if (f.email) f.email.value = '';
+        if (f.budget) f.budget.value = '';
         if (f.msg) f.msg.value = '';
       } else {
         say(btn, 'Sorry, that didn’t go through. Please email me directly at ' + CONTACT_EMAIL + '.', '#E07A5A');
