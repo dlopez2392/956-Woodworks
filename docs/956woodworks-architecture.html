@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>956 Woodworks — Website Architecture &amp; Infrastructure</title>
+<style>
+  @page { size: Letter; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body { font: 10.5pt/1.55 "Segoe UI", Arial, sans-serif; color: #26211C; margin: 0; }
+  h1, h2, h3, .serif { font-family: Georgia, "Times New Roman", serif; }
+  h1 { font-size: 26pt; font-weight: normal; margin: 0 0 4px; }
+  h2 { font-size: 15pt; font-weight: normal; color: #17130F; border-bottom: 2px solid #C9A24B; padding-bottom: 4px; margin: 26px 0 10px; page-break-after: avoid; }
+  h3 { font-size: 11.5pt; margin: 16px 0 6px; color: #6B5220; page-break-after: avoid; }
+  p { margin: 6px 0; }
+  .cover { background: #17130F; color: #EDE6DB; padding: 34px 34px 26px; border-radius: 10px; margin-bottom: 22px; }
+  .cover .brand { color: #C9A24B; letter-spacing: 5px; font-size: 10pt; text-transform: uppercase; margin-bottom: 14px; }
+  .cover h1 { color: #EDE6DB; }
+  .cover .sub { color: rgba(237,230,219,.75); font-size: 10.5pt; margin-top: 8px; }
+  .meta { display: flex; gap: 26px; margin-top: 18px; font-size: 9pt; color: rgba(237,230,219,.65); }
+  .meta b { display: block; color: #C9A24B; font-size: 8pt; letter-spacing: 1.5px; text-transform: uppercase; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 9.5pt; page-break-inside: avoid; }
+  th { background: #17130F; color: #EDE6DB; text-align: left; padding: 6px 9px; font-weight: 600; }
+  td { border: 1px solid #DDD4C6; padding: 5px 9px; vertical-align: top; }
+  tr:nth-child(even) td { background: #F7F3EC; }
+  code { font-family: Consolas, "Courier New", monospace; font-size: 9pt; background: #F2EDE3; padding: 1px 4px; border-radius: 3px; }
+  .box { background: #F7F3EC; border-left: 4px solid #C9A24B; padding: 10px 14px; margin: 12px 0; page-break-inside: avoid; }
+  .box b:first-child { color: #6B5220; }
+  .diagram { margin: 14px 0; page-break-inside: avoid; text-align: center; }
+  .diagram figcaption { font-size: 8.5pt; color: #8A8072; margin-top: 6px; font-style: italic; }
+  .pagebreak { page-break-before: always; }
+  ul { margin: 6px 0; padding-left: 20px; }
+  li { margin: 3px 0; }
+  .footer-note { margin-top: 28px; padding-top: 10px; border-top: 1px solid #DDD4C6; font-size: 8.5pt; color: #8A8072; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="brand">956 Woodworks &middot; Technical Documentation</div>
+  <h1>Website Architecture &amp; Infrastructure</h1>
+  <div class="sub">How 956woodworks.com is built, wired, deployed, and maintained &mdash; pages, image pipeline, APIs, hosting, and the runbook for future changes.</div>
+  <div class="meta">
+    <div><b>Live Site</b>https://956woodworks.com</div>
+    <div><b>Repository</b>github.com/dlopez2392/956-Woodworks</div>
+    <div><b>Hosting</b>Vercel (static, no build step)</div>
+    <div><b>Document Date</b>July 7, 2026</div>
+  </div>
+</div>
+
+<h2>1. System Overview</h2>
+<p>956woodworks.com is a <b>fully static marketing site</b> for a custom woodworking business in the Rio Grande Valley. There is no backend server, no database, and no build step: five self-contained HTML pages plus a 404 page are served directly from Vercel's CDN. Interactivity (galleries, the commission form, the photo lightbox) runs entirely in the visitor's browser; the only write path out of the site is the contact form, which posts to the third-party <b>Web3Forms</b> API and arrives as email.</p>
+<p>The pages were designed in a visual editor ("DesignCanvas" / DC) whose export format shapes the whole architecture: each exported page embeds its own copy of the DC runtime, page markup, and component logic as <b>gzip-compressed base64 blobs</b> inside the HTML, hydrated client-side with React 18. Because that bundle cannot be edited directly, all post-export fixes and features are delivered as small, network-loaded <b>runtime scripts</b> (section 7).</p>
+
+<div class="diagram">
+<svg width="680" height="365" viewBox="0 0 680 365" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial" font-size="11">
+  <defs><marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#6B5220"/></marker></defs>
+  <!-- visitor -->
+  <rect x="10" y="140" width="120" height="70" rx="8" fill="#17130F"/>
+  <text x="70" y="170" fill="#EDE6DB" text-anchor="middle" font-weight="bold">Visitor</text>
+  <text x="70" y="188" fill="#C9A24B" text-anchor="middle" font-size="9">Browser (desktop / mobile)</text>
+  <!-- vercel -->
+  <rect x="215" y="105" width="220" height="140" rx="8" fill="#F7F3EC" stroke="#C9A24B" stroke-width="2"/>
+  <text x="325" y="127" text-anchor="middle" font-weight="bold" fill="#17130F">Vercel Edge / CDN</text>
+  <text x="325" y="145" text-anchor="middle" font-size="9" fill="#6B5220">static hosting &middot; 956woodworks.com</text>
+  <rect x="230" y="158" width="90" height="34" rx="4" fill="#fff" stroke="#BBA97F"/>
+  <text x="275" y="172" text-anchor="middle" font-size="8.5">5 HTML pages</text>
+  <text x="275" y="184" text-anchor="middle" font-size="8.5">+ 404.html</text>
+  <rect x="330" y="158" width="90" height="34" rx="4" fill="#fff" stroke="#BBA97F"/>
+  <text x="375" y="172" text-anchor="middle" font-size="8.5">state JSONs</text>
+  <text x="375" y="184" text-anchor="middle" font-size="8.5">(photos, base64)</text>
+  <rect x="230" y="200" width="90" height="34" rx="4" fill="#fff" stroke="#BBA97F"/>
+  <text x="275" y="214" text-anchor="middle" font-size="8.5">7 runtime</text>
+  <text x="275" y="226" text-anchor="middle" font-size="8.5">fix scripts (.js)</text>
+  <rect x="330" y="200" width="90" height="34" rx="4" fill="#fff" stroke="#BBA97F"/>
+  <text x="375" y="214" text-anchor="middle" font-size="8.5">sitemap, robots,</text>
+  <text x="375" y="226" text-anchor="middle" font-size="8.5">icons, og-image</text>
+  <!-- third parties -->
+  <rect x="520" y="10" width="150" height="52" rx="8" fill="#fff" stroke="#6B5220" stroke-width="1.5"/>
+  <text x="595" y="31" text-anchor="middle" font-weight="bold" font-size="10">Web3Forms API</text>
+  <text x="595" y="46" text-anchor="middle" font-size="8.5">commission form &rarr; email</text>
+  <rect x="520" y="76" width="150" height="52" rx="8" fill="#fff" stroke="#6B5220" stroke-width="1.5"/>
+  <text x="595" y="97" text-anchor="middle" font-weight="bold" font-size="10">Vercel Analytics</text>
+  <text x="595" y="112" text-anchor="middle" font-size="8.5">Speed Insights + Web Analytics</text>
+  <rect x="520" y="142" width="150" height="52" rx="8" fill="#fff" stroke="#6B5220" stroke-width="1.5"/>
+  <text x="595" y="163" text-anchor="middle" font-weight="bold" font-size="10">Google Fonts</text>
+  <text x="595" y="178" text-anchor="middle" font-size="8.5">Cormorant Garamond, Manrope</text>
+  <rect x="520" y="208" width="150" height="52" rx="8" fill="#fff" stroke="#6B5220" stroke-width="1.5"/>
+  <text x="595" y="229" text-anchor="middle" font-weight="bold" font-size="10">unpkg CDN</text>
+  <text x="595" y="244" text-anchor="middle" font-size="8.5">React 18.3.1 UMD (DC runtime)</text>
+  <rect x="520" y="274" width="150" height="52" rx="8" fill="#fff" stroke="#6B5220" stroke-width="1.5"/>
+  <text x="595" y="295" text-anchor="middle" font-weight="bold" font-size="10">Direct channels</text>
+  <text x="595" y="310" text-anchor="middle" font-size="8.5">tel: / sms: / mailto: / IG / FB</text>
+  <!-- arrows -->
+  <line x1="130" y1="175" x2="210" y2="175" stroke="#6B5220" stroke-width="1.5" marker-end="url(#ar)"/>
+  <text x="170" y="167" text-anchor="middle" font-size="8" fill="#6B5220">HTTPS</text>
+  <line x1="437" y1="140" x2="516" y2="42" stroke="#6B5220" stroke-width="1.2" marker-end="url(#ar)"/>
+  <line x1="437" y1="160" x2="516" y2="102" stroke="#6B5220" stroke-width="1.2" marker-end="url(#ar)"/>
+  <line x1="437" y1="180" x2="516" y2="168" stroke="#6B5220" stroke-width="1.2" marker-end="url(#ar)"/>
+  <line x1="437" y1="200" x2="516" y2="234" stroke="#6B5220" stroke-width="1.2" marker-end="url(#ar)"/>
+  <line x1="437" y1="220" x2="516" y2="298" stroke="#6B5220" stroke-width="1.2" marker-end="url(#ar)"/>
+  <text x="470" y="352" text-anchor="middle" font-size="8.5" fill="#8A8072">browser-side calls only — the site itself has no server code</text>
+</svg>
+<figcaption>Figure 1 — High-level architecture. Everything is static files on Vercel; all API traffic originates in the visitor's browser.</figcaption>
+</div>
+
+<h2>2. Technology Stack &amp; Page Anatomy</h2>
+<table>
+  <tr><th>Layer</th><th>Technology</th><th>Notes</th></tr>
+  <tr><td>Authoring</td><td>DesignCanvas (DC) visual editor</td><td>Source files: <code>956 Woodworks.dc.html</code>, <code>Gallery.dc.html</code>, 3 care-page sources at repo root</td></tr>
+  <tr><td>Page runtime</td><td>React 18.3.1 (UMD via unpkg) + DC engine</td><td>DC engine + page markup shipped inside each HTML as gzipped-base64 <code>__bundler</code> manifest blobs</td></tr>
+  <tr><td>Components</td><td>Custom elements (<code>&lt;image-slot&gt;</code>)</td><td>Shadow-DOM photo frames with cover-fit + reframe math; 87 slots across home and gallery</td></tr>
+  <tr><td>Styling</td><td>Inline styles + embedded CSS</td><td>Dark walnut/gold brand (#17130F / #C9A24B); Cormorant Garamond (serif) + Manrope (sans)</td></tr>
+  <tr><td>Enhancements</td><td>7 vanilla-JS runtime scripts</td><td>Loaded with <code>defer</code> before <code>&lt;/body&gt;</code>; see section 7</td></tr>
+  <tr><td>Hosting</td><td>Vercel static deployment</td><td>Project root = <code>site/</code>; no framework, no build command</td></tr>
+  <tr><td>Version control</td><td>GitHub, single <code>main</code> branch</td><td>Push to main = production deploy (Vercel Git integration)</td></tr>
+</table>
+
+<h3>Anatomy of an exported page</h3>
+<p>Each <code>site/*.html</code> file contains, in order: a hand-maintained static <code>&lt;head&gt;</code> (SEO meta, JSON-LD, preload hints, an inline fetch-redirect script, a head-restore script); the DC bundle (React loader + <code>&lt;script type="__bundler/manifest"&gt;</code> blobs holding the compressed runtime, markup, and component logic); and the runtime fix scripts plus analytics tags before <code>&lt;/body&gt;</code>. At load time the DC engine decompresses its blobs, mounts the page with React, and <b>replaces the entire <code>&lt;head&gt;</code> and <code>&lt;html&gt;</code> attributes</b> — which is why an inline capture-and-restore script re-applies the SEO tags and <code>a11y.js</code> re-asserts <code>lang="en"</code>.</p>
+
+<div class="diagram">
+<svg width="680" height="120" viewBox="0 0 680 120" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial" font-size="10">
+  <defs><marker id="ar2" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#6B5220"/></marker></defs>
+  <rect x="5" y="30" width="118" height="58" rx="6" fill="#F7F3EC" stroke="#C9A24B" stroke-width="1.5"/>
+  <text x="64" y="52" text-anchor="middle" font-weight="bold" font-size="9.5">1. HTML parse</text>
+  <text x="64" y="66" text-anchor="middle" font-size="8">static head, SEO tags,</text>
+  <text x="64" y="78" text-anchor="middle" font-size="8">fetch wrapper installed</text>
+  <rect x="143" y="30" width="118" height="58" rx="6" fill="#F7F3EC" stroke="#C9A24B" stroke-width="1.5"/>
+  <text x="202" y="52" text-anchor="middle" font-weight="bold" font-size="9.5">2. Preload starts</text>
+  <text x="202" y="66" text-anchor="middle" font-size="8">per-page photo JSON</text>
+  <text x="202" y="78" text-anchor="middle" font-size="8">downloads (~0.5s in)</text>
+  <rect x="281" y="30" width="118" height="58" rx="6" fill="#F7F3EC" stroke="#C9A24B" stroke-width="1.5"/>
+  <text x="340" y="52" text-anchor="middle" font-weight="bold" font-size="9.5">3. DC boot</text>
+  <text x="340" y="66" text-anchor="middle" font-size="8">React mounts, blobs</text>
+  <text x="340" y="78" text-anchor="middle" font-size="8">decompress, head wiped</text>
+  <rect x="419" y="30" width="118" height="58" rx="6" fill="#F7F3EC" stroke="#C9A24B" stroke-width="1.5"/>
+  <text x="478" y="52" text-anchor="middle" font-weight="bold" font-size="9.5">4. Slots hydrate</text>
+  <text x="478" y="66" text-anchor="middle" font-size="8">state JSON parsed,</text>
+  <text x="478" y="78" text-anchor="middle" font-size="8">photos fill shadow DOM</text>
+  <rect x="557" y="30" width="118" height="58" rx="6" fill="#F7F3EC" stroke="#C9A24B" stroke-width="1.5"/>
+  <text x="616" y="52" text-anchor="middle" font-weight="bold" font-size="9.5">5. Fix scripts</text>
+  <text x="616" y="66" text-anchor="middle" font-size="8">lightbox, form, a11y,</text>
+  <text x="616" y="78" text-anchor="middle" font-size="8">CTA enhance the page</text>
+  <line x1="123" y1="59" x2="140" y2="59" stroke="#6B5220" stroke-width="1.5" marker-end="url(#ar2)"/>
+  <line x1="261" y1="59" x2="278" y2="59" stroke="#6B5220" stroke-width="1.5" marker-end="url(#ar2)"/>
+  <line x1="399" y1="59" x2="416" y2="59" stroke="#6B5220" stroke-width="1.5" marker-end="url(#ar2)"/>
+  <line x1="537" y1="59" x2="554" y2="59" stroke="#6B5220" stroke-width="1.5" marker-end="url(#ar2)"/>
+</svg>
+<figcaption>Figure 2 — Page boot sequence.</figcaption>
+</div>
+
+<div class="pagebreak"></div>
+<h2>3. Hosting, Domain &amp; Deployment Pipeline</h2>
+<table>
+  <tr><th>Item</th><th>Value</th></tr>
+  <tr><td>Vercel project</td><td><code>danlopez508-8452s-projects/956woodworks</code> — deploys the <code>site/</code> folder as-is (static, ~5s deploys)</td></tr>
+  <tr><td>Production domain</td><td><code>956woodworks.com</code> (apex). <code>www</code> 308-redirects to apex via <code>vercel.json</code> host rules</td></tr>
+  <tr><td>Domain registrar / DNS</td><td>Registered at GoDaddy; nameservers point to <b>Vercel DNS</b> (records managed via <code>vercel dns</code>, not GoDaddy)</td></tr>
+  <tr><td>Deploy trigger</td><td>Git push to <code>main</code> &rarr; Vercel Git integration auto-deploys to production</td></tr>
+  <tr><td>Access</td><td>Deployment Protection disabled (public site, no Vercel SSO gate)</td></tr>
+  <tr><td>Security headers</td><td><code>X-Content-Type-Options: nosniff</code>, <code>X-Frame-Options: SAMEORIGIN</code>, <code>Referrer-Policy: strict-origin-when-cross-origin</code>, restrictive <code>Permissions-Policy</code> (all via <code>vercel.json</code>)</td></tr>
+  <tr><td>Legacy redirects</td><td>Old <code>*.dc.html</code> URLs 308-redirect to their kebab-case pages (safety net for re-exports and old bookmarks)</td></tr>
+  <tr><td>Custom 404</td><td><code>site/404.html</code>, branded, served automatically by Vercel for unknown paths</td></tr>
+</table>
+
+<div class="diagram">
+<svg width="680" height="150" viewBox="0 0 680 150" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial" font-size="10">
+  <defs><marker id="ar3" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#6B5220"/></marker></defs>
+  <rect x="5" y="40" width="140" height="62" rx="6" fill="#17130F"/>
+  <text x="75" y="63" text-anchor="middle" fill="#EDE6DB" font-weight="bold" font-size="10">Local workspace</text>
+  <text x="75" y="78" text-anchor="middle" fill="#C9A24B" font-size="8">DC sources + site/ export</text>
+  <text x="75" y="91" text-anchor="middle" fill="#C9A24B" font-size="8">tools/sync-image-state.js</text>
+  <rect x="200" y="40" width="140" height="62" rx="6" fill="#F7F3EC" stroke="#C9A24B" stroke-width="1.5"/>
+  <text x="270" y="63" text-anchor="middle" font-weight="bold" font-size="10">GitHub</text>
+  <text x="270" y="78" text-anchor="middle" font-size="8">dlopez2392/956-Woodworks</text>
+  <text x="270" y="91" text-anchor="middle" font-size="8">branch: main</text>
+  <rect x="395" y="40" width="140" height="62" rx="6" fill="#F7F3EC" stroke="#C9A24B" stroke-width="1.5"/>
+  <text x="465" y="63" text-anchor="middle" font-weight="bold" font-size="10">Vercel</text>
+  <text x="465" y="78" text-anchor="middle" font-size="8">root dir: site/ &middot; no build</text>
+  <text x="465" y="91" text-anchor="middle" font-size="8">edge CDN + headers/redirects</text>
+  <rect x="588" y="40" width="87" height="62" rx="6" fill="#17130F"/>
+  <text x="631" y="66" text-anchor="middle" fill="#EDE6DB" font-weight="bold" font-size="9">Public</text>
+  <text x="631" y="81" text-anchor="middle" fill="#C9A24B" font-size="7.5">956woodworks.com</text>
+  <line x1="145" y1="71" x2="196" y2="71" stroke="#6B5220" stroke-width="1.5" marker-end="url(#ar3)"/>
+  <text x="170" y="63" text-anchor="middle" font-size="8" fill="#6B5220">git push</text>
+  <line x1="340" y1="71" x2="391" y2="71" stroke="#6B5220" stroke-width="1.5" marker-end="url(#ar3)"/>
+  <text x="365" y="63" text-anchor="middle" font-size="8" fill="#6B5220">webhook</text>
+  <line x1="535" y1="71" x2="584" y2="71" stroke="#6B5220" stroke-width="1.5" marker-end="url(#ar3)"/>
+  <text x="559" y="63" text-anchor="middle" font-size="8" fill="#6B5220">DNS</text>
+  <text x="340" y="135" text-anchor="middle" font-size="8.5" fill="#8A8072">Rollback = git revert + push (or promote a previous Vercel deployment)</text>
+</svg>
+<figcaption>Figure 3 — Deployment pipeline. A push to main is live in under a minute.</figcaption>
+</div>
+
+<h2>4. The Image-Slot Photo System (core subsystem)</h2>
+<p>All 87 photos live as <b>base64 data-URLs inside JSON "sidecar" files</b>, not as image files. Each <code>&lt;image-slot id="..."&gt;</code> element fetches the sidecar, looks up its id, and renders the photo in shadow DOM with cover-fit and reframe values (<code>{u, s, x, y}</code> = image, scale, x/y offsets in frame-%). The bundled loader <b>rejects any non-<code>data:image/</code> URL</b>, so photos must stay base64. Slot ids are permanent — reusing or renumbering one silently swaps photos (this caused real incidents; rule is codified in <code>CLAUDE.md</code>).</p>
+<p>For performance, the editor's single master file is split per page and recompressed by <code>tools/sync-image-state.js</code>. An inline <code>&lt;head&gt;</code> script wraps <code>window.fetch</code> to redirect the runtime's request for the full file to the page-specific one (falling back to the full file if missing) and caches the response, because the bundle evaluates the loader module twice on the gallery page.</p>
+
+<div class="diagram">
+<svg width="680" height="235" viewBox="0 0 680 235" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial" font-size="10">
+  <defs><marker id="ar4" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#6B5220"/></marker></defs>
+  <rect x="5" y="20" width="160" height="60" rx="6" fill="#17130F"/>
+  <text x="85" y="43" text-anchor="middle" fill="#EDE6DB" font-weight="bold" font-size="9.5">.image-slots.state.json</text>
+  <text x="85" y="57" text-anchor="middle" fill="#C9A24B" font-size="8">repo root — editor source of truth</text>
+  <text x="85" y="69" text-anchor="middle" fill="#C9A24B" font-size="8">87 slots, webp base64</text>
+  <rect x="230" y="20" width="150" height="60" rx="6" fill="#F7F3EC" stroke="#C9A24B" stroke-width="1.5"/>
+  <text x="305" y="43" text-anchor="middle" font-weight="bold" font-size="9.5">sync-image-state.js</text>
+  <text x="305" y="57" text-anchor="middle" font-size="8">copies + splits + backs up</text>
+  <text x="305" y="69" text-anchor="middle" font-size="8">(run after ANY image change)</text>
+  <rect x="445" y="4" width="180" height="40" rx="5" fill="#fff" stroke="#BBA97F"/>
+  <text x="535" y="20" text-anchor="middle" font-size="8.5" font-weight="bold">site/.image-slots.home.state.json</text>
+  <text x="535" y="34" text-anchor="middle" font-size="8">29 ww-*/process-* slots &middot; 0.93 MB</text>
+  <rect x="445" y="52" width="180" height="40" rx="5" fill="#fff" stroke="#BBA97F"/>
+  <text x="535" y="68" text-anchor="middle" font-size="8.5" font-weight="bold">site/.image-slots.gallery.state.json</text>
+  <text x="535" y="82" text-anchor="middle" font-size="8">58 gal-* slots &middot; 2.18 MB</text>
+  <rect x="445" y="100" width="180" height="40" rx="5" fill="#fff" stroke="#BBA97F"/>
+  <text x="535" y="116" text-anchor="middle" font-size="8.5" font-weight="bold">site/.image-slots.state.json</text>
+  <text x="535" y="130" text-anchor="middle" font-size="8">full copy — fallback only</text>
+  <line x1="165" y1="50" x2="226" y2="50" stroke="#6B5220" stroke-width="1.5" marker-end="url(#ar4)"/>
+  <line x1="380" y1="40" x2="441" y2="26" stroke="#6B5220" stroke-width="1.2" marker-end="url(#ar4)"/>
+  <line x1="380" y1="50" x2="441" y2="70" stroke="#6B5220" stroke-width="1.2" marker-end="url(#ar4)"/>
+  <line x1="380" y1="62" x2="441" y2="116" stroke="#6B5220" stroke-width="1.2" marker-end="url(#ar4)"/>
+  <!-- runtime flow -->
+  <rect x="5" y="160" width="205" height="60" rx="6" fill="#F7F3EC" stroke="#C9A24B" stroke-width="1.5"/>
+  <text x="107" y="181" text-anchor="middle" font-weight="bold" font-size="9.5">Inline head fetch-wrapper</text>
+  <text x="107" y="195" text-anchor="middle" font-size="8">redirects runtime's fetch to the page file,</text>
+  <text x="107" y="207" text-anchor="middle" font-size="8">caches response (bundle fetches twice)</text>
+  <rect x="255" y="160" width="180" height="60" rx="6" fill="#F7F3EC" stroke="#C9A24B" stroke-width="1.5"/>
+  <text x="345" y="181" text-anchor="middle" font-weight="bold" font-size="9.5">&lt;link rel="preload"&gt;</text>
+  <text x="345" y="195" text-anchor="middle" font-size="8">starts the JSON download at parse</text>
+  <text x="345" y="207" text-anchor="middle" font-size="8">time (~0.5s) instead of after boot</text>
+  <rect x="480" y="160" width="195" height="60" rx="6" fill="#17130F"/>
+  <text x="577" y="181" text-anchor="middle" fill="#EDE6DB" font-weight="bold" font-size="9.5">&lt;image-slot&gt; shadow DOM</text>
+  <text x="577" y="195" text-anchor="middle" fill="#C9A24B" font-size="8">img.src = data-URL; cover-fit;</text>
+  <text x="577" y="207" text-anchor="middle" fill="#C9A24B" font-size="8">reframe s/x/y in frame-% (scale-safe)</text>
+  <line x1="210" y1="190" x2="251" y2="190" stroke="#6B5220" stroke-width="1.5" marker-end="url(#ar4)"/>
+  <line x1="435" y1="190" x2="476" y2="190" stroke="#6B5220" stroke-width="1.5" marker-end="url(#ar4)"/>
+</svg>
+<figcaption>Figure 4 — Photo pipeline: authoring file &rarr; sync tool &rarr; per-page sidecars &rarr; browser hydration.</figcaption>
+</div>
+
+<div class="box"><b>Performance history.</b> The original export shipped one 5.7&nbsp;MB sidecar to every page (the gallery downloaded it twice = 11.4&nbsp;MB). After converting 21 JPEG/PNG photos to WebP q80, downscaling 23 oversized photos to 660&nbsp;px, splitting per page, deduplicating the double-fetch, and preloading: the home page now transfers <b>~640&nbsp;KB</b> and the gallery <b>~1.7&nbsp;MB</b> (Brotli-compressed on the wire). Lighthouse (mobile): Accessibility <b>100</b>, SEO <b>100</b>, Best Practices 96, Performance 42 — the last is bound by the DC client-side rendering architecture, not asset weight.</div>
+
+<div class="pagebreak"></div>
+<h2>5. APIs &amp; External Services</h2>
+<table>
+  <tr><th>Service</th><th>Endpoint / integration</th><th>Direction</th><th>Purpose &amp; wiring</th></tr>
+  <tr><td><b>Web3Forms</b></td><td><code>POST https://api.web3forms.com/submit</code> (JSON)</td><td>Browser &rarr; out</td><td>Commission form. <code>form.js</code> intercepts the Send click in capture phase (blocking the old <code>mailto:</code>), validates, posts <code>access_key, name, email, piece_type, budget, message</code>; Web3Forms emails <code>956woodwork@gmail.com</code>. Key (public by design, domain-scoped): <code>d4fe&hellip;5338</code>. No CAPTCHA yet; add hCaptcha via Web3Forms if spam appears.</td></tr>
+  <tr><td><b>Vercel Speed Insights</b></td><td><code>/_vercel/speed-insights/script.js</code> + <code>POST /_vercel/speed-insights/vitals</code></td><td>Browser &rarr; out</td><td>Core Web Vitals field data. Script on all 5 pages; verified live (vitals POST returns 200). Dashboard: project &rarr; Speed Insights tab.</td></tr>
+  <tr><td><b>Vercel Web Analytics</b></td><td><code>/_vercel/insights/script.js</code></td><td>Browser &rarr; out</td><td>Cookieless page-view analytics. Script tags in place on all pages, but the project-level toggle is <b>not yet active</b> (route 404s). Enable: project &rarr; Analytics tab, then redeploy.</td></tr>
+  <tr><td><b>Google Fonts</b></td><td><code>fonts.googleapis.com</code> / <code>fonts.gstatic.com</code></td><td>Browser &larr; in</td><td>Cormorant Garamond + Manrope, <code>display=swap</code>, preconnected. (Home page also carries fonts inlined by the DC export.)</td></tr>
+  <tr><td><b>unpkg</b></td><td><code>unpkg.com/react@18.3.1</code>, <code>react-dom@18.3.1</code></td><td>Browser &larr; in</td><td>React UMD builds required by the DC runtime bundle.</td></tr>
+  <tr><td><b>Google Search Console</b></td><td>Domain property <code>sc-domain:956woodworks.com</code></td><td>Config</td><td>Verified via TXT record in Vercel DNS; sitemap submitted at the apex.</td></tr>
+  <tr><td><b>Direct contact</b></td><td><code>tel:</code> / <code>sms:9562921696</code> / <code>mailto:</code> / instagram.com/956woodworks / Facebook page</td><td>Links</td><td>Call pill (header), Call + Text Me + DM buttons (contact section), footer links.</td></tr>
+</table>
+
+<div class="diagram">
+<svg width="680" height="130" viewBox="0 0 680 130" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial" font-size="10">
+  <defs><marker id="ar5" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#6B5220"/></marker></defs>
+  <rect x="5" y="35" width="150" height="60" rx="6" fill="#F7F3EC" stroke="#C9A24B" stroke-width="1.5"/>
+  <text x="80" y="58" text-anchor="middle" font-weight="bold" font-size="9.5">Commission form</text>
+  <text x="80" y="72" text-anchor="middle" font-size="8">name, email, piece type,</text>
+  <text x="80" y="84" text-anchor="middle" font-size="8">budget (optional), message</text>
+  <rect x="205" y="35" width="150" height="60" rx="6" fill="#F7F3EC" stroke="#C9A24B" stroke-width="1.5"/>
+  <text x="280" y="58" text-anchor="middle" font-weight="bold" font-size="9.5">form.js</text>
+  <text x="280" y="72" text-anchor="middle" font-size="8">capture-phase intercept,</text>
+  <text x="280" y="84" text-anchor="middle" font-size="8">inline validation + feedback</text>
+  <rect x="405" y="35" width="130" height="60" rx="6" fill="#fff" stroke="#6B5220" stroke-width="1.5"/>
+  <text x="470" y="58" text-anchor="middle" font-weight="bold" font-size="9.5">Web3Forms</text>
+  <text x="470" y="72" text-anchor="middle" font-size="8">api.web3forms.com</text>
+  <text x="470" y="84" text-anchor="middle" font-size="8">(access-key auth)</text>
+  <rect x="585" y="35" width="90" height="60" rx="6" fill="#17130F"/>
+  <text x="630" y="62" text-anchor="middle" fill="#EDE6DB" font-weight="bold" font-size="9">Gmail inbox</text>
+  <text x="630" y="77" text-anchor="middle" fill="#C9A24B" font-size="7.5">956woodwork@</text>
+  <line x1="155" y1="65" x2="201" y2="65" stroke="#6B5220" stroke-width="1.5" marker-end="url(#ar5)"/>
+  <line x1="355" y1="65" x2="401" y2="65" stroke="#6B5220" stroke-width="1.5" marker-end="url(#ar5)"/>
+  <text x="378" y="57" text-anchor="middle" font-size="8" fill="#6B5220">POST</text>
+  <line x1="535" y1="65" x2="581" y2="65" stroke="#6B5220" stroke-width="1.5" marker-end="url(#ar5)"/>
+  <text x="558" y="57" text-anchor="middle" font-size="8" fill="#6B5220">email</text>
+</svg>
+<figcaption>Figure 5 — Lead flow. The only data leaving the site is a form submission, delivered as email.</figcaption>
+</div>
+
+<h2>6. Pages &amp; SEO</h2>
+<table>
+  <tr><th>Page</th><th>URL</th><th>Structured data &amp; notes</th></tr>
+  <tr><td>Home</td><td><code>/</code></td><td>LocalBusiness JSON-LD (services catalog, RGV area served) + FAQPage; hero, before/after slider, categories, process, 18-photo grid, testimonials (placeholders), FAQ accordion, commission form</td></tr>
+  <tr><td>Gallery</td><td><code>/gallery.html</code></td><td>BreadcrumbList; 58 photos, category filter chips, lightbox with captions</td></tr>
+  <tr><td>Care guides (3)</td><td><code>/cutting-board-care.html</code>, <code>/furniture-care.html</code>, <code>/rolling-pin-care.html</code></td><td>Article + BreadcrumbList JSON-LD; editorial layout ending in a commission CTA</td></tr>
+  <tr><td>Not found</td><td>any unknown path</td><td><code>404.html</code>, noindex, branded, links back to home/gallery/contact</td></tr>
+</table>
+<p>Site-wide: per-page titles/descriptions/canonicals, Open Graph + Twitter cards with a 1200&times;630 share image, SVG favicon + 180&times;180 <code>apple-touch-icon.png</code>, <code>sitemap.xml</code> (5 URLs) and <code>robots.txt</code>, <code>lang="en"</code>. Alt text for all photos is applied at runtime by <code>a11y.js</code> (gallery captions / curated map).</p>
+
+<h2>7. Runtime Fix Scripts (the "patch layer")</h2>
+<p>Because the DC export embeds its logic in compressed blobs, the live site is enhanced by small network-loaded scripts. Convention: every fix also patches the DC <em>source</em> files where possible so a future re-export bakes it in; injected DOM carries ids and is re-applied by slow maintenance ticks; event handlers are delegated to <code>document</code> (the DC engine re-renders every few seconds and drops per-node listeners, but keeps injected nodes).</p>
+<table>
+  <tr><th>Script</th><th>Pages</th><th>What it does</th></tr>
+  <tr><td><code>compare-slider.js</code></td><td>home</td><td>Wires the before/after slider drag (export didn't bind the pointer handler)</td></tr>
+  <tr><td><code>mobile-scroll-fix.js</code></td><td>home, gallery</td><td>Overrides <code>touch-action:none</code> on photos so mobile scrolling works</td></tr>
+  <tr><td><code>lightbox.js</code></td><td>home, gallery</td><td>Tap-to-enlarge photo viewer: prev/next, keyboard, counter, category captions, alt text</td></tr>
+  <tr><td><code>form.js</code></td><td>home</td><td>Web3Forms submission + validation; injects budget dropdown, photo-texting hint, Text&nbsp;Me button</td></tr>
+  <tr><td><code>faq.js</code></td><td>home</td><td>Injects the 9-question FAQ accordion section (delegated toggle handlers)</td></tr>
+  <tr><td><code>a11y.js</code></td><td>home, gallery</td><td>Photo alt text, <code>lang="en"</code> re-assert, form aria-labels, footer contrast fix, removes dead credit anchors, hides decorative slots</td></tr>
+  <tr><td><code>ui-polish.js</code></td><td>home, gallery</td><td>Sticky mobile "Commission a piece" pill; mobile header spacing fix</td></tr>
+</table>
+
+<div class="pagebreak"></div>
+<h2>8. Repository Layout</h2>
+<table>
+  <tr><th>Path</th><th>Contents</th></tr>
+  <tr><td><code>/</code> (root)</td><td>DC editor sources (<code>*.dc.html</code>), master <code>.image-slots.state.json</code> + <code>.backup</code>, <code>image-slot.js</code> component source, <code>uploads/</code> (original photos, not used at runtime), <code>CLAUDE.md</code> (persistent project rules)</td></tr>
+  <tr><td><code>/site</code></td><td><b>The deployed website</b>: 5 pages + 404, per-page state JSONs, 7 runtime scripts, <code>vercel.json</code>, sitemap/robots/icons/og-image, <code>.vercel</code> link (gitignored)</td></tr>
+  <tr><td><code>/tools</code></td><td><code>sync-image-state.js</code> — the photo pipeline (copy &rarr; optional recompress &rarr; split &rarr; backup)</td></tr>
+  <tr><td><code>/docs</code></td><td>This document (HTML source + PDF)</td></tr>
+</table>
+
+<h2>9. Maintenance Runbook</h2>
+<div class="box"><b>Golden rule №1 — slot ids are permanent.</b> Never renumber, reorder, or reuse an <code>&lt;image-slot&gt;</code> id. New photos get brand-new ids (bump a counter: <code>gal-226</code>, <code>gal-227</code>&hellip;). Ids are the only key into the photo store.</div>
+<div class="box"><b>Golden rule №2 — after ANY image change, run</b> <code>node tools/sync-image-state.js</code>. The live pages read the per-page files; the full-file fallback only covers a <em>missing</em> page file, not a <em>stale</em> one. Skipping this shows old photos on the live site.</div>
+<h3>Common tasks</h3>
+<ul>
+  <li><b>Deploy anything:</b> commit and push to <code>main</code>. Live in ~30–60s. Verify at 956woodworks.com.</li>
+  <li><b>Add/replace a photo:</b> edit in the DC editor (writes the root state file) &rarr; run the sync tool &rarr; push.</li>
+  <li><b>Change copy/layout:</b> edit the DC source, re-export, then work the re-export checklist below.</li>
+  <li><b>Rollback:</b> <code>git revert</code> the commit and push (or promote an older deployment in the Vercel dashboard).</li>
+</ul>
+<h3>Re-export checklist (whenever <code>site/</code> is regenerated from the DC editor)</h3>
+<ul>
+  <li>Copy <code>image-slot.js</code> into <code>site/</code> (the export drops it).</li>
+  <li>Fix the 5 nav links in <code>site/index.html</code> (<code>.dc.html</code> names &rarr; kebab-case pages) — or rely on the <code>vercel.json</code> redirects.</li>
+  <li>Re-add the <code>defer</code> script tags for the 7 runtime scripts + the two Vercel analytics tags before <code>&lt;/body&gt;</code>.</li>
+  <li>Confirm the inline head scripts (SEO restore, fetch-wrapper, preload link) survived — they live in the source helmets, but verify.</li>
+  <li>Run <code>node tools/sync-image-state.js</code>; keep <code>404.html</code>, <code>vercel.json</code>, sitemap/robots/icons in place.</li>
+</ul>
+<h3>Known limitations &amp; watch items</h3>
+<ul>
+  <li>Mobile Lighthouse performance (~42) is bound by DC's client-side full-page rendering (~6s main-thread on a throttled phone). Fixing it means re-platforming; real-world fast connections are fine (CLS = 0).</li>
+  <li>Web Analytics toggle pending in the Vercel dashboard (script route 404s until enabled + redeployed); this is also the only remaining Lighthouse Best-Practices deduction (console 404).</li>
+  <li>Testimonials are anonymous placeholders — swap in real quotes (name + city) when available; never fabricate.</li>
+  <li>Third-party dependencies at runtime: unpkg (React) and Google Fonts. If unpkg is ever slow/down, pages degrade badly — consider self-hosting React if it becomes an issue.</li>
+  <li>If form spam appears: enable hCaptcha in Web3Forms (key is domain-scoped).</li>
+</ul>
+
+<p class="footer-note">Prepared July 7, 2026 &middot; Reflects production state at commit <code>49aa532</code> &middot; Sources: repository <code>dlopez2392/956-Woodworks</code>, Vercel project <code>956woodworks</code>, live-site verification.</p>
+
+</body>
+</html>
