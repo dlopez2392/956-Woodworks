@@ -65,6 +65,40 @@
     }
   }
 
+  function fixContrast() {
+    // Two muted footer/label tones fail WCAG AA for small text on the #100D0B
+    // background (3.42:1 and 2.4:1; 4.5:1 required). They're inline styles in
+    // the bundled markup, so brighten them at runtime — but only where the
+    // text is small (large text ≥24px only needs 3:1 and keeps the design).
+    var MAP = { 'rgb(110, 102, 92)': '#968D80', 'rgb(87, 79, 70)': '#8F8578' };
+    var els = document.body.getElementsByTagName('*');
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i];
+      var c = el.style && el.style.color;
+      if (!c) continue;
+      var repl = MAP[c];
+      if (!repl) continue;
+      var cs = getComputedStyle(el);
+      var size = parseFloat(cs.fontSize) || 16;
+      var bold = parseInt(cs.fontWeight, 10) >= 700;
+      if (size >= 24 || (bold && size >= 18.66)) continue; // large text passes at 3:1
+      el.style.color = repl;
+    }
+  }
+
+  function removeDeadCredits() {
+    // Every image-slot's shadow DOM contains an empty photo-credit <a> with no
+    // href (this site never sets the credit attribute) — Lighthouse flags them
+    // as uncrawlable anchors. They're display:none and unused; drop them.
+    var slots = document.querySelectorAll('image-slot');
+    for (var i = 0; i < slots.length; i++) {
+      var r = slots[i].shadowRoot;
+      if (!r) continue;
+      var a = r.querySelector('a.credit');
+      if (a && !a.getAttribute('href') && !a.textContent) a.remove();
+    }
+  }
+
   function labelForms() {
     // Commission form fields only carry placeholders (not announced reliably,
     // and gone once the user types) — mirror them into aria-label.
@@ -82,15 +116,26 @@
     }
   }
 
-  var n = 0;
-  var t = setInterval(function () {
+  function pass() {
     apply();
     labelForms();
-    if (++n >= 10) clearInterval(t); // ~15s of retries covers late hydration
+    fixContrast();
+    removeDeadCredits();
+  }
+
+  var n = 0;
+  var t = setInterval(function () {
+    pass();
+    if (++n >= 10) {
+      clearInterval(t);
+      // The DC runtime's periodic re-renders can re-stamp template inline
+      // styles; keep a slow maintenance tick so fixes stay applied.
+      setInterval(pass, 10000);
+    }
   }, 1500);
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', apply);
+    document.addEventListener('DOMContentLoaded', pass);
   } else {
-    apply();
+    pass();
   }
 })();
