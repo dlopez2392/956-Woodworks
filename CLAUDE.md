@@ -29,6 +29,23 @@ source of truth for uploaded photos.
   the backup, all in one step.
 - Keep `.image-slots.state.backup.json` up to date as an extra safety copy
   whenever the state file changes.
+
+## Gallery lightbox hi-res (on-demand)
+The gallery grid loads fast ~660px photos (from the state files above). Slots
+that have a crisp 1200px version for the lightbox are served as **separate real
+webp files**, loaded only when a photo is opened:
+- Master (editable source): `.image-slots.gallery.hires.state.json` at repo root
+  — `{ "<slot-id>": "data:image/webp;base64,..." }`, 1200px long edge.
+- `node tools/build-hires.js` explodes the master into `site/hires/<id>.webp`
+  + `site/.image-slots.gallery.hires.json` (manifest = list of ids that have
+  hi-res). Run it after changing the master.
+- `site/lightbox.js` fetches the manifest on first open and swaps in
+  `hires/<id>.webp` for listed slots (660px shown instantly, then upgraded);
+  slots not in the manifest stay at 660px. Keeps page loads light while the
+  lightbox stays sharp.
+- Hi-res masters were built from full-res originals in `uploads/` (4000px+
+  phone photos), content-matched to slots by perceptual hash and visually
+  verified on a contact sheet — never map uploads to slots by filename alone.
 - The user has been burned multiple times by images "disappearing" (they were
   actually fine, just orphaned by id changes). Be extremely careful and
   conservative here — verify with an actual contact-sheet/visual check before

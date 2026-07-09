@@ -5,9 +5,30 @@
  * we read the rendered <img> source (the full, uncropped image). Skips the hero
  * background and the before/after comparison images. Prev/next browses the
  * other photos in the same section. Loaded on index.html + gallery.html.
+ *
+ * Hi-res on demand: the gallery grid loads fast ~660px photos. Slots listed in
+ * .image-slots.gallery.hires.json have a crisp 1200px version at
+ * hires/<id>.webp. The lightbox shows the 660px instantly, then swaps in the
+ * hi-res file once it loads — so page loads stay light and only opened photos
+ * pull their hi-res copy. Falls back silently if the manifest/file is absent.
  */
 (function () {
   var SKIP = { 'ww-hero': 1, 'ww-about': 1, 'ww-about-room': 1, 'ww-loader': 1 };
+  var HIRES_MANIFEST = '.image-slots.gallery.hires.json';
+
+  // Lazily-loaded set of slot ids that have a hi-res file (fetched on first open).
+  var hiresSet = null, hiresP = null;
+  function loadManifest() {
+    if (hiresP) return hiresP;
+    hiresP = fetch(HIRES_MANIFEST)
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .then(function (a) { hiresSet = {}; (a || []).forEach(function (id) { hiresSet[id] = 1; }); })
+      .catch(function () { hiresSet = {}; });
+    return hiresP;
+  }
+  function hiresUrl(slot) {
+    return (slot && hiresSet && hiresSet[slot.id]) ? 'hires/' + slot.id + '.webp' : null;
+  }
 
   function imgOf(s) { return s.shadowRoot && s.shadowRoot.querySelector('.frame img'); }
   function srcOf(s) { var i = imgOf(s); return i && (i.currentSrc || i.src); }
@@ -20,7 +41,7 @@
     return [].slice.call(scope.querySelectorAll('image-slot')).filter(eligible);
   }
 
-  var ov, imgEl, countEl, capEl, group = [], idx = 0;
+  var ov, imgEl, countEl, capEl, group = [], idx = 0, renderToken = 0;
 
   // Piece category from the gallery card's caption (e.g. "Custom Furniture");
   // home-page photos have no captions and show none.
@@ -56,15 +77,29 @@
     });
   }
 
+  function preload(slot) { var u = hiresUrl(slot); if (u) { var i = new Image(); i.src = u; } }
+
   function render() {
-    imgEl.src = srcOf(group[idx]) || '';
-    var cap = capOf(group[idx]);
+    var slot = group[idx];
+    var token = ++renderToken;
+    // Show the fast grid image immediately (from cache) ...
+    imgEl.src = srcOf(slot) || '';
+    var cap = capOf(slot);
     capEl.textContent = cap;
     imgEl.alt = cap ? cap + ' — handcrafted by 956 Woodworks' : '956 Woodworks piece';
     var multi = group.length > 1;
     ov.querySelector('[data-lb=prev]').style.display = multi ? 'flex' : 'none';
     ov.querySelector('[data-lb=next]').style.display = multi ? 'flex' : 'none';
     countEl.textContent = multi ? (idx + 1) + ' / ' + group.length : '';
+    // ... then upgrade to the crisp hi-res file once it has loaded, unless the
+    // user has already navigated to another photo.
+    var hu = hiresUrl(slot);
+    if (hu) {
+      var pre = new Image();
+      pre.onload = function () { if (token === renderToken) imgEl.src = hu; };
+      pre.src = hu;
+    }
+    if (multi) { preload(group[(idx + 1) % group.length]); preload(group[(idx - 1 + group.length) % group.length]); }
   }
   function go(d) { if (group.length) { idx = (idx + d + group.length) % group.length; render(); } }
 
@@ -73,6 +108,9 @@
     group = groupOf(slot);
     idx = Math.max(0, group.indexOf(slot));
     render();
+    // Manifest may not be loaded on the very first open; re-render once it is so
+    // the first-opened photo also upgrades to hi-res.
+    loadManifest().then(function () { if (ov && ov.style.display === 'flex') render(); });
     ov.style.display = 'flex';
     document.documentElement.style.overflow = 'hidden';
     requestAnimationFrame(function () { ov.style.opacity = '1'; });
