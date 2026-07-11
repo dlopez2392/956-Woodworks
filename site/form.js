@@ -132,7 +132,20 @@
     renderThumbs();
   }
 
-  function uploadOne(p) { p.status = 'ready'; p.url = 'stub://' + p.id; p.promise = Promise.resolve(); renderThumbs(); return p.promise; } // real upload added in the next step
+  function uploadOne(p) {
+    var fd = new FormData();
+    fd.append('key', IMGBB_KEY);
+    fd.append('image', p.file);
+    p.promise = fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: fd })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (j && j.success && j.data && (j.data.display_url || j.data.url)) { p.url = j.data.display_url || j.data.url; p.status = 'ready'; }
+        else { p.status = 'error'; }
+      })
+      .catch(function () { p.status = 'error'; })
+      .then(function () { renderThumbs(); });
+    return p.promise;
+  }
 
   function handleFiles(list) {
     var files = [].slice.call(list || []);
