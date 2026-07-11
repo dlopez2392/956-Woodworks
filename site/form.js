@@ -104,6 +104,64 @@
     if (p) { p.textContent = text; p.style.color = color || '#968D80'; }
   }
 
+  // ── Commission photo upload helpers ──────────────────────────────────────
+  function photoMsg(t) {
+    var zone = document.getElementById('ww-photo-zone'); if (!zone) return;
+    var m = document.getElementById('ww-photo-msg');
+    if (!m) { m = document.createElement('div'); m.id = 'ww-photo-msg'; m.style.cssText = 'margin:6px 0 0;font-size:12px;color:#E0A33A;'; zone.appendChild(m); }
+    m.textContent = t; clearTimeout(m._t); m._t = setTimeout(function () { if (m) m.textContent = ''; }, 4000);
+  }
+
+  function renderThumbs() {
+    var c = document.getElementById('ww-photo-thumbs'); if (!c) return;
+    c.innerHTML = photos.map(function (p) {
+      var ring = p.status === 'error' ? '2px solid #E07A5A' : (p.status === 'ready' ? '2px solid #8FBF6F' : '1px solid rgba(237,231,222,.25)');
+      var dim = p.status === 'uploading' ? 'opacity:.6;' : '';
+      return '<div style="position:relative;width:64px;height:64px;border-radius:6px;overflow:hidden;border:' + ring + ';' + dim + '">' +
+        '<img src="' + p.objUrl + '" alt="" style="width:100%;height:100%;object-fit:cover">' +
+        (p.status === 'uploading' ? '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#EDE7DE;font-size:12px">…</div>' : '') +
+        '<button type="button" data-ww-rmphoto="' + p.id + '" aria-label="Remove photo" style="position:absolute;top:-1px;right:-1px;width:18px;height:18px;border:0;border-radius:0 0 0 6px;background:rgba(23,19,15,.85);color:#EDE7DE;font-size:12px;line-height:1;cursor:pointer">×</button>' +
+        '</div>';
+    }).join('');
+    var prompt = document.getElementById('ww-photo-prompt');
+    if (prompt) prompt.style.display = photos.length ? 'none' : '';
+  }
+
+  function removePhoto(id) {
+    for (var i = 0; i < photos.length; i++) { if (photos[i].id === id) { if (photos[i].objUrl) URL.revokeObjectURL(photos[i].objUrl); photos.splice(i, 1); break; } }
+    renderThumbs();
+  }
+
+  function uploadOne(p) { p.status = 'ready'; p.url = 'stub://' + p.id; p.promise = Promise.resolve(); renderThumbs(); return p.promise; } // real upload added in the next step
+
+  function handleFiles(list) {
+    var files = [].slice.call(list || []);
+    for (var i = 0; i < files.length; i++) {
+      var f = files[i];
+      if (photos.length >= MAX_PHOTOS) { photoMsg('Up to ' + MAX_PHOTOS + ' photos.'); break; }
+      if (!ALLOWED.test(f.type)) { photoMsg('Images only (jpg, png, webp, heic).'); continue; }
+      if (f.size > MAX_BYTES) { photoMsg('“' + f.name + '” is over 10 MB.'); continue; }
+      var p = { id: 'p' + (++photoSeq), file: f, url: null, status: 'uploading', objUrl: URL.createObjectURL(f), promise: null };
+      photos.push(p); renderThumbs(); uploadOne(p);
+    }
+  }
+
+  var photoHandlersBound = false;
+  function bindPhotoHandlers() {
+    if (photoHandlersBound) return; photoHandlersBound = true;
+    document.addEventListener('click', function (e) {
+      var rm = e.target.closest && e.target.closest('[data-ww-rmphoto]');
+      if (rm) { e.preventDefault(); e.stopPropagation(); removePhoto(rm.getAttribute('data-ww-rmphoto')); return; }
+      var zone = e.target.closest && e.target.closest('#ww-photo-zone');
+      if (zone) { var inp = document.getElementById('ww-photo-input'); if (inp) inp.click(); }
+    });
+    document.addEventListener('change', function (e) {
+      if (e.target && e.target.id === 'ww-photo-input') { handleFiles(e.target.files); e.target.value = ''; }
+    });
+    document.addEventListener('dragover', function (e) { if (e.target.closest && e.target.closest('#ww-photo-zone')) e.preventDefault(); });
+    document.addEventListener('drop', function (e) { var z = e.target.closest && e.target.closest('#ww-photo-zone'); if (z) { e.preventDefault(); handleFiles(e.dataTransfer.files); } });
+  }
+
   // Refresh the now-inaccurate "Opens your email app" helper text once present.
   function fixHelper() {
     var btns = document.querySelectorAll('button');
@@ -196,4 +254,6 @@
     e.stopImmediatePropagation();
     submit(btn);
   }, true);
+
+  bindPhotoHandlers();
 })();
