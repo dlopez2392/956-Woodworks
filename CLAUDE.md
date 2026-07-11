@@ -50,3 +50,18 @@ webp files**, loaded only when a photo is opened:
   actually fine, just orphaned by id changes). Be extremely careful and
   conservative here — verify with an actual contact-sheet/visual check before
   telling the user anything is missing or restored.
+
+## Commission form photo upload
+`site/form.js` lets clients attach up to 5 inspiration photos (optional) in the
+commission form. Since Web3Forms file attachments are Pro-only, photos upload
+client-side to **ImgBB** (free) and their links are appended to the Web3Forms
+message + a `photo_links` field.
+- `IMGBB_KEY` in `form.js` is a **public** ImgBB upload key (same exposure model
+  as the Web3Forms `ACCESS_KEY`). Known tradeoff: a public upload key can be
+  scraped/abused; rotate it in the ImgBB dashboard if that happens.
+- The upload UI (`#ww-photo-zone` + thumbnails) is injected by `enhanceForm()`
+  with the same survival pattern as the budget field; handlers delegated via
+  `bindPhotoHandlers()`. Limits: images only, 5 photos, 10 MB each. Failed
+  uploads show a red ring and never block the inquiry.
+- ImgBB browser CORS is confirmed working; if it ever breaks, swap `uploadOne`
+  to a Cloudinary unsigned upload (front-end identical).
