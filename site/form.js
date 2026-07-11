@@ -215,6 +215,15 @@
     if (!name || !email || !msg) { say(btn, 'Please add your name, email, and a message.', '#E0A33A'); return; }
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { say(btn, 'That email address looks off — mind checking it?', '#E0A33A'); return; }
 
+    if (photos.length) {
+      say(btn, 'Finishing photo uploads…', '#968D80');
+      await Promise.race([
+        Promise.all(photos.map(function (p) { return p.promise || Promise.resolve(); })),
+        new Promise(function (res) { setTimeout(res, 15000); })
+      ]);
+    }
+    var photoLinks = photos.filter(function (p) { return p.status === 'ready' && p.url; }).map(function (p) { return p.url; });
+
     sending = true;
     var orig = btn.textContent;
     btn.textContent = 'Sending…';
@@ -233,7 +242,8 @@
           email: email,
           piece_type: type,
           budget: budget || '(not specified)',
-          message: msg
+          message: msg + (photoLinks.length ? '\n\nInspiration photos:\n' + photoLinks.join('\n') : ''),
+          photo_links: photoLinks.join('\n')
         })
       });
       var j = await res.json();
@@ -245,6 +255,8 @@
         if (f.email) f.email.value = '';
         if (f.budget) f.budget.value = '';
         if (f.msg) f.msg.value = '';
+        photos.forEach(function (p) { if (p.objUrl) URL.revokeObjectURL(p.objUrl); });
+        photos = []; renderThumbs();
       } else {
         say(btn, 'Sorry, that didn’t go through. Please email me directly at ' + CONTACT_EMAIL + '.', '#E07A5A');
         btn.textContent = orig;
