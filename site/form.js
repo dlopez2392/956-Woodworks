@@ -13,7 +13,7 @@
 
   // Commission inspiration-photo upload (optional). Photos upload client-side
   // to ImgBB (free) and their links ride along in the Web3Forms message.
-  var IMGBB_KEY = 'YOUR_IMGBB_KEY'; // public upload key — replace with real ImgBB key
+  var IMGBB_KEY = '3070e96b24e37cc0947ad9c9dc05532b'; // public ImgBB upload key (client-side, like ACCESS_KEY)
   var ALLOWED = /^image\/(jpe?g|png|webp|heic)$/i;
   var MAX_PHOTOS = 5, MAX_BYTES = 10 * 1024 * 1024;
   var photos = [];   // { id, file, url, status:'uploading'|'ready'|'error', objUrl, promise }
