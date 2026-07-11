@@ -11,6 +11,14 @@
   var CONTACT_EMAIL = '956woodwork@gmail.com';
   var sending = false;
 
+  // Commission inspiration-photo upload (optional). Photos upload client-side
+  // to ImgBB (free) and their links ride along in the Web3Forms message.
+  var IMGBB_KEY = 'YOUR_IMGBB_KEY'; // public upload key — replace with real ImgBB key
+  var ALLOWED = /^image\/(jpe?g|png|webp|heic)$/i;
+  var MAX_PHOTOS = 5, MAX_BYTES = 10 * 1024 * 1024;
+  var photos = [];   // { id, file, url, status:'uploading'|'ready'|'error', objUrl, promise }
+  var photoSeq = 0;
+
   function fields(scope) {
     return {
       name: scope.querySelector('input[placeholder="Your name"]'),
@@ -50,6 +58,23 @@
         '<a href="sms:9562921696" style="color:#C6A15B;text-decoration:none;">956-292-1696</a>' +
         ' — it helps me quote faster.';
       ta.parentElement.insertBefore(p, ta.nextSibling);
+    }
+    if (!document.getElementById('ww-photo-zone')) {
+      var taForZone = document.querySelector('textarea');
+      var anchor = document.getElementById('ww-photo-hint') || taForZone;
+      if (anchor && anchor.parentNode) {
+        var zone = document.createElement('div');
+        zone.id = 'ww-photo-zone';
+        zone.setAttribute('role', 'button');
+        zone.setAttribute('tabindex', '0');
+        zone.setAttribute('aria-label', 'Add inspiration photos (optional)');
+        zone.style.cssText = 'margin:0 0 14px;border:1.5px dashed rgba(201,162,75,.55);border-radius:8px;padding:16px;text-align:center;cursor:pointer;color:#968D80;font:14px Manrope,sans-serif;';
+        zone.innerHTML =
+          '<input id="ww-photo-input" type="file" accept="image/*" multiple style="display:none">' +
+          '<div id="ww-photo-prompt"><span style="color:#C9A24B;font-size:16px;letter-spacing:1px;">＋</span> Drag photos here or tap to add <span style="opacity:.7">— optional</span></div>' +
+          '<div id="ww-photo-thumbs" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:10px"></div>';
+        anchor.parentNode.insertBefore(zone, anchor.nextSibling);
+      }
     }
     // "Text Me" next to the DM on Instagram CTA, cloned so it matches.
     if (!document.getElementById('ww-sms-btn')) {
